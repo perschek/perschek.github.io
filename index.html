@@ -4,624 +4,473 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BEN // SYSTEM INIT</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" media="print" onload="this.media='all'">
-<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap"></noscript>
+<title>BEN PERSCHEK // SYS</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" media="print" onload="this.media='all'">
 <style>
-
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-–green: #00ff41;
-–green-dim: #00bb30;
-–green-faint: #003d0f;
-–green-mid: #00cc33;
+–g:  #00ff41;
+–gd: #00bb30;
+–gf: #001a05;
+–gm: #00cc33;
 –bg: #010b01;
-–scanline: rgba(0,0,0,0.15);
+–cy: #00ffff;
+–yl: #ffdd57;
 }
 
 html, body {
 width: 100%; height: 100%;
 background: var(–bg);
-color: var(–green);
+color: var(–g);
 font-family: ‘Share Tech Mono’, ‘Courier New’, Courier, monospace;
 overflow: hidden;
-cursor: auto;
 }
 
-@media (pointer: fine) {
-html, body { cursor: none; }
-}
-
-#cursor {
-position: fixed;
-width: 18px; height: 18px;
-border: 2px solid var(–green);
-border-radius: 50%;
-pointer-events: none;
-z-index: 9999;
-transform: translate(-50%, -50%);
-transition: transform 0.05s;
-mix-blend-mode: screen;
-display: none;
-}
-
-@media (pointer: fine) {
-#cursor { display: block; }
-}
-#cursor::after {
-content: ‘’;
-position: absolute;
-width: 4px; height: 4px;
-background: var(–green);
-border-radius: 50%;
-top: 50%; left: 50%;
-transform: translate(-50%,-50%);
-}
-
-/* scanlines overlay */
 body::before {
 content: ‘’;
-position: fixed;
-inset: 0;
-background: repeating-linear-gradient(
-to bottom,
-transparent 0px,
-transparent 3px,
-var(–scanline) 3px,
-var(–scanline) 4px
-);
+position: fixed; inset: 0;
+background: repeating-linear-gradient(to bottom, transparent 0px, transparent 3px, rgba(0,0,0,0.12) 3px, rgba(0,0,0,0.12) 4px);
 pointer-events: none;
-z-index: 100;
+z-index: 200;
 }
 
-/* CRT flicker */
 body::after {
 content: ‘’;
-position: fixed;
-inset: 0;
-background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.6) 100%);
+position: fixed; inset: 0;
+background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.6) 100%);
 pointer-events: none;
-z-index: 99;
-animation: flicker 8s infinite;
+z-index: 199;
+animation: flicker 10s infinite;
 }
 
 @keyframes flicker {
-0%,100% { opacity: 1; }
-92% { opacity: 1; }
-93% { opacity: 0.85; }
-94% { opacity: 1; }
-96% { opacity: 0.9; }
-97% { opacity: 1; }
+0%,89%,91%,93%,95%,100% { opacity:1; }
+90%,92%,94% { opacity:0.88; }
 }
 
-/* BOOT SCREEN */
+/* BOOT */
 #boot {
-position: fixed;
-inset: 0;
-padding: 16px 16px;
-font-family: ‘Share Tech Mono’, ‘Courier New’, Courier, monospace;
-font-size: clamp(11px, 3vw, 14px);
-line-height: 1.6;
+position: fixed; inset: 0;
+padding: 14px;
+font-size: clamp(12px, 3.5vw, 15px);
+line-height: 1.65;
 overflow-y: auto;
 z-index: 10;
 }
 
-#boot-lines { white-space: pre; }
-
-.boot-line { display: block; opacity: 0; animation: fadein 0.01s forwards; }
-.ok    { color: var(–green); }
-.warn  { color: #ffcc00; }
-.err   { color: #ff4444; }
-.dim   { color: var(–green-dim); }
-.head  { color: #00ffff; font-size: 1.1em; }
-
-@keyframes fadein { to { opacity: 1; } }
-
-/* BIOS header art */
-#bios-art {
-font-family: ‘VT323’, monospace;
-font-size: clamp(22px, 4vw, 42px);
-color: var(–green);
-text-shadow: 0 0 20px var(–green), 0 0 40px var(–green-dim);
-margin-bottom: 12px;
-letter-spacing: 2px;
+#boot-art {
+color: var(–g);
+text-shadow: 0 0 18px var(–g);
+font-size: clamp(16px, 4.5vw, 28px);
+margin-bottom: 14px;
+white-space: pre;
+animation: glow 3s ease-in-out infinite alternate;
 }
+
+@keyframes glow {
+from { text-shadow: 0 0 10px var(–g); }
+to   { text-shadow: 0 0 28px var(–g), 0 0 50px var(–gd); }
+}
+
+.bl   { display: block; opacity: 0; animation: fi 0.05s forwards; }
+@keyframes fi { to { opacity:1; } }
+.ok   { color: var(–g); }
+.warn { color: var(–yl); }
+.dim  { color: var(–gd); }
+.cy   { color: var(–cy); }
 
 /* TERMINAL */
-#terminal {
-position: fixed;
-inset: 0;
+#term {
+position: fixed; inset: 0;
 display: none;
 flex-direction: column;
-padding: 0;
 z-index: 10;
 }
 
-#term-header {
-background: var(–green-faint);
-border-bottom: 1px solid var(–green-dim);
-padding: 6px 16px;
+#tbar {
+background: var(–gf);
+border-bottom: 1px solid var(–gd);
+padding: 7px 14px;
 display: flex;
 align-items: center;
-gap: 12px;
-font-size: 12px;
-color: var(–green-dim);
-flex-shrink: 0;
-}
-
-.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-.dot-r { background: #ff5f57; }
-.dot-y { background: #febc2e; }
-.dot-g { background: #28c840; }
-
-#term-title {
-flex: 1;
-text-align: center;
-font-family: ‘Share Tech Mono’, monospace;
-letter-spacing: 3px;
-font-size: 11px;
-color: var(–green);
-text-shadow: 0 0 8px var(–green);
-}
-
-#output-area {
-flex: 1;
-overflow-y: auto;
-padding: 20px 24px 8px;
-font-size: clamp(12px, 1.6vw, 14px);
-line-height: 1.7;
-scrollbar-width: thin;
-scrollbar-color: var(–green-dim) transparent;
-}
-
-#output-area::-webkit-scrollbar { width: 6px; }
-#output-area::-webkit-scrollbar-thumb { background: var(–green-dim); border-radius: 3px; }
-
-.out-line { display: block; white-space: pre-wrap; word-break: break-word; }
-.prompt-line { color: var(–green); }
-.result-line { color: var(–green-mid); }
-.accent { color: #00ffff; }
-.yellow { color: #ffdd57; }
-.muted  { color: var(–green-dim); }
-.error  { color: #ff5555; }
-.big    { font-family: ‘VT323’, monospace; font-size: 2em; color: var(–green); text-shadow: 0 0 10px var(–green); line-height: 1.2; }
-
-#input-row {
-display: flex;
-align-items: center;
-padding: 10px 24px 16px;
-border-top: 1px solid var(–green-faint);
 gap: 8px;
 flex-shrink: 0;
 }
 
-#prompt-label {
-color: var(–green);
-text-shadow: 0 0 8px var(–green);
-white-space: nowrap;
-font-size: clamp(12px, 1.6vw, 14px);
+.dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; display:inline-block; }
+.dr  { background:#ff5f57; }
+.dy  { background:#febc2e; }
+.dg  { background:#28c840; }
+
+#ttitle {
+flex:1; text-align:center;
+font-size: clamp(9px, 2.5vw, 12px);
+letter-spacing: 2px;
+color: var(–g);
+text-shadow: 0 0 8px var(–g);
+}
+
+#out {
+flex:1;
+overflow-y: auto;
+padding: 14px 14px 6px;
+font-size: clamp(12px, 3.5vw, 14px);
+line-height: 1.75;
+-webkit-overflow-scrolling: touch;
+}
+
+.ln { display:block; white-space:pre-wrap; word-break:break-word; }
+.pl { color: var(–g); }
+.rl { color: var(–gm); }
+.ac { color: var(–cy); }
+.yl { color: var(–yl); }
+.mu { color: var(–gd); }
+.er { color: #ff5555; }
+
+/* BUTTON GRID */
+#btns {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 6px;
+padding: 8px 10px 12px;
+border-top: 1px solid var(–gf);
 flex-shrink: 0;
 }
 
-#cmd-input {
-flex: 1;
-background: transparent;
-border: none;
-outline: none;
-color: var(–green);
-font-family: ‘Share Tech Mono’, monospace;
-font-size: clamp(12px, 1.6vw, 14px);
-caret-color: var(–green);
-text-shadow: 0 0 6px var(–green);
+.cb {
+background: var(–gf);
+border: 1px solid var(–gd);
+color: var(–g);
+font-family: ‘Share Tech Mono’, ‘Courier New’, Courier, monospace;
+font-size: clamp(10px, 3vw, 13px);
+padding: 9px 4px;
+border-radius: 4px;
+cursor: pointer;
+text-align: center;
+-webkit-tap-highlight-color: transparent;
+user-select: none;
+transition: background 0.1s, box-shadow 0.1s;
 }
 
-/* glitch animation for banner */
-@keyframes glitch {
-0%,100% { text-shadow: 0 0 20px var(–green), 0 0 40px var(–green-dim); transform: none; }
-20% { text-shadow: -2px 0 #ff0000, 2px 0 #00ffff; transform: translateX(1px); }
-21% { text-shadow: 0 0 20px var(–green); transform: none; }
-60% { text-shadow: 2px 0 #ff00ff, -2px 0 #00ff00; transform: translateX(-1px); }
-61% { text-shadow: 0 0 20px var(–green); transform: none; }
+.cb:active, .cb:focus { background: #003d10; box-shadow: 0 0 10px var(–gd); outline:none; }
+
+.wide {
+grid-column: span 3;
+background: #0a1f0a;
+border-color: var(–g);
+color: var(–yl);
+letter-spacing: 1px;
 }
 
-.glitch { animation: glitch 6s infinite; display: inline-block; }
-
-/* help table */
-.cmd-table { border-collapse: collapse; margin: 4px 0 8px; width: 100%; max-width: 560px; }
-.cmd-table td { padding: 1px 16px 1px 0; vertical-align: top; }
-.cmd-table td:first-child { color: #00ffff; white-space: nowrap; min-width: 120px; }
-.cmd-table td:last-child { color: var(–green-mid); }
+.wide:active { background: #1a3a1a; box-shadow: 0 0 18px var(–g); }
 </style>
 
 </head>
-<body>
-
-<div id="cursor"></div>
-
-<!-- ═══ BOOT SCREEN ═══ -->
+<body style="background:#010b01">
 
 <div id="boot">
-  <div id="bios-art">
-    <div class="glitch"> ___ ___ _  _</div>
-    <div class="glitch">| _ ) __| \| |</div>
-    <div class="glitch">| _ \ _|| .` |</div>
-    <div class="glitch">|___/___|_|\_|</div>
-    <div class="glitch" style="font-size:0.5em;margin-top:6px;letter-spacing:1px;">FIELD SYSTEMS // v2.6 // PERSCHEK</div>
-  </div>
+  <div id="boot-art"> ____  _____ _   _
+| __ )| ____| \ | |
+|  _ \|  _| |  \| |
+| |_) | |___| |\  |
+|____/|_____|_| \_|</div>
   <div id="boot-lines"></div>
 </div>
 
-<!-- ═══ TERMINAL ═══ -->
-
-<div id="terminal">
-  <div id="term-header">
-    <span class="dot dot-r"></span>
-    <span class="dot dot-y"></span>
-    <span class="dot dot-g"></span>
-    <span id="term-title">BEN@LOCALHOST — BASH — 80×24</span>
-    <span style="font-size:11px;color:var(--green-dim)">[ type <span style="color:var(--green)">help</span> to get started ]</span>
+<div id="term">
+  <div id="tbar">
+    <span class="dot dr"></span>
+    <span class="dot dy"></span>
+    <span class="dot dg"></span>
+    <span id="ttitle">BEN@LOCALHOST -- PERSCHEK.GITHUB.IO</span>
   </div>
-  <div id="output-area"></div>
-  <div id="input-row">
-    <span id="prompt-label">ben@localhost:~$</span>
-    <input id="cmd-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" autofocus />
+  <div id="out"></div>
+  <div id="btns">
+    <button class="cb" onclick="run('whoami')">whoami</button>
+    <button class="cb" onclick="run('skills')">skills</button>
+    <button class="cb" onclick="run('experience')">experience</button>
+    <button class="cb" onclick="run('education')">education</button>
+    <button class="cb" onclick="run('military')">military</button>
+    <button class="cb" onclick="run('projects')">projects</button>
+    <button class="cb" onclick="run('contact')">contact</button>
+    <button class="cb" onclick="run('clear')">clear</button>
+    <button class="cb" onclick="run('help')">help</button>
+    <button class="cb wide" onclick="run('sudo hire')">[ sudo hire ben ]</button>
   </div>
 </div>
 
 <script>
-// ─── cursor ───────────────────────────────────────────────
-const cur = document.getElementById('cursor');
-document.addEventListener('mousemove', e => {
-  cur.style.left = e.clientX + 'px';
-  cur.style.top  = e.clientY + 'px';
-});
-
-// ─── BOOT SEQUENCE ────────────────────────────────────────
 const bootLines = [
-  { text: 'BEN-OS BIOS v2.6.1 — Copyright 2024 Field Systems LLC', cls: 'dim', delay: 0 },
-  { text: 'CPU: US Army Combat Engineer • Iowa National Guard', cls: 'ok', delay: 120 },
-  { text: 'RAM: 250lb of bad decisions and good intentions', cls: 'ok', delay: 200 },
-  { text: '', delay: 260 },
-  { text: 'Initializing hardware...', cls: 'dim', delay: 320 },
-  { text: '  [  OK  ] Boots detected (size 14, steel-toed)', cls: 'ok', delay: 440 },
-  { text: '  [  OK  ] Coffee module loaded', cls: 'ok', delay: 560 },
-  { text: '  [  OK  ] Great Pyrenees (Milo) — bark daemon active', cls: 'ok', delay: 680 },
-  { text: '', delay: 740 },
-  { text: 'Loading kernel modules...', cls: 'dim', delay: 800 },
-  { text: '  [  OK  ] usps_city_carrier.ko                    LOADED', cls: 'ok', delay: 920 },
-  { text: '  [  OK  ] army_national_guard.ko                  LOADED', cls: 'ok', delay: 1000 },
-  { text: '  [  OK  ] wgu_cybersecurity_bs.ko                 LOADING', cls: 'warn', delay: 1080 },
-  { text: '  [  OK  ] itam_asset_tracking.ko                  LOADED', cls: 'ok', delay: 1160 },
-  { text: '  [  OK  ] esp32_diy_hacker.ko                     LOADED', cls: 'ok', delay: 1240 },
-  { text: '  [ WARN ] cedar_tech_solutions.ko              IN PROGRESS', cls: 'warn', delay: 1320 },
-  { text: '', delay: 1380 },
-  { text: 'Running fsck on experience partition...', cls: 'dim', delay: 1440 },
-  { text: '  [  OK  ] /dev/usps — route integrity verified', cls: 'ok', delay: 1560 },
-  { text: '  [  OK  ] /dev/army — sensitive items accountability OK', cls: 'ok', delay: 1640 },
-  { text: '  [  OK  ] /dev/fleet — Clatsop County fleet records clean', cls: 'ok', delay: 1720 },
-  { text: '', delay: 1780 },
-  { text: 'Mounting filesystems...', cls: 'dim', delay: 1840 },
-  { text: '  [  OK  ] Cedar Rapids, IA — /home/ben             mounted', cls: 'ok', delay: 1940 },
-  { text: '  [  OK  ] James + Leo — /home/ben/kids             mounted', cls: 'ok', delay: 2020 },
-  { text: '  [  OK  ] Kelly — /home/ben/partner                mounted', cls: 'ok', delay: 2100 },
-  { text: '', delay: 2160 },
-  { text: 'Starting network services...', cls: 'dim', delay: 2220 },
-  { text: '  [  OK  ] LinkedIn interface up', cls: 'ok', delay: 2320 },
-  { text: '  [  OK  ] GitHub Pages — serving on :443', cls: 'ok', delay: 2400 },
-  { text: '', delay: 2480 },
-  { text: '████████████████████████████████████ 100%', cls: 'ok', delay: 2560 },
-  { text: '', delay: 2660 },
-  { text: 'BEN-OS ready. Dropping to shell...', cls: 'head', delay: 2760 },
-  { text: '', delay: 2900 },
+  { t:'BEN-OS BIOS v2.6 -- Field Systems LLC',          c:'dim',  d:0    },
+  { t:'CPU: US Army Combat Engineer / Iowa Nat Guard',   c:'ok',   d:130  },
+  { t:'RAM: 250lb bad decisions, good intentions',       c:'ok',   d:230  },
+  { t:'',                                                c:'',     d:300  },
+  { t:'Initializing hardware...',                        c:'dim',  d:360  },
+  { t:'  [ OK ] Boots size 14, steel-toed',              c:'ok',   d:470  },
+  { t:'  [ OK ] Coffee module loaded',                   c:'ok',   d:570  },
+  { t:'  [ OK ] Great Pyrenees (Milo) bark daemon up',   c:'ok',   d:670  },
+  { t:'',                                                c:'',     d:730  },
+  { t:'Loading kernel modules...',                       c:'dim',  d:790  },
+  { t:'  [ OK ] usps_city_carrier.ko        LOADED',     c:'ok',   d:890  },
+  { t:'  [ OK ] army_national_guard.ko      LOADED',     c:'ok',   d:970  },
+  { t:'  [WARN] wgu_cybersecurity_bs.ko     LOADING',    c:'warn', d:1050 },
+  { t:'  [ OK ] itam_asset_tracking.ko      LOADED',     c:'ok',   d:1130 },
+  { t:'  [ OK ] esp32_diy_hacker.ko         LOADED',     c:'ok',   d:1210 },
+  { t:'  [WARN] cedar_tech_solutions.ko  IN PROGRESS',   c:'warn', d:1290 },
+  { t:'',                                                c:'',     d:1350 },
+  { t:'Checking filesystems...',                         c:'dim',  d:1410 },
+  { t:'  [ OK ] /dev/usps -- route integrity OK',        c:'ok',   d:1510 },
+  { t:'  [ OK ] /dev/army -- accountability OK',         c:'ok',   d:1590 },
+  { t:'  [ OK ] /dev/fleet -- Clatsop County clean',     c:'ok',   d:1670 },
+  { t:'',                                                c:'',     d:1730 },
+  { t:'Mounting...',                                     c:'dim',  d:1790 },
+  { t:'  [ OK ] Cedar Rapids IA -- /home/ben  mounted',  c:'ok',   d:1870 },
+  { t:'  [ OK ] James + Leo -- /home/ben/kids mounted',  c:'ok',   d:1950 },
+  { t:'',                                                c:'',     d:2010 },
+  { t:'[####################] 100%',                     c:'ok',   d:2090 },
+  { t:'',                                                c:'',     d:2170 },
+  { t:'BEN-OS ready. Loading shell...',                  c:'cy',   d:2230 },
 ];
 
-const bootContainer = document.getElementById('boot-lines');
+const bl = document.getElementById('boot-lines');
 
 function runBoot() {
-  bootLines.forEach(({ text, cls, delay }) => {
+  bootLines.forEach(({t, c, d}) => {
     setTimeout(() => {
-      const span = document.createElement('span');
-      span.className = 'boot-line ' + (cls || '');
-      span.textContent = text;
-      bootContainer.appendChild(span);
-    }, delay);
+      const s = document.createElement('span');
+      s.className = 'bl ' + c;
+      s.textContent = t;
+      bl.appendChild(s);
+      bl.scrollTop = bl.scrollHeight;
+    }, d);
   });
-
-  const lastDelay = bootLines[bootLines.length - 1].delay;
-  setTimeout(switchToTerminal, lastDelay + 600);
+  const last = bootLines[bootLines.length - 1].d;
+  setTimeout(goTerm, last + 700);
 }
 
-function switchToTerminal() {
+function goTerm() {
   const boot = document.getElementById('boot');
-  const term = document.getElementById('terminal');
   boot.style.transition = 'opacity 0.5s';
   boot.style.opacity = '0';
   setTimeout(() => {
     boot.style.display = 'none';
-    term.style.display = 'flex';
-    printWelcome();
-    document.getElementById('cmd-input').focus();
+    document.getElementById('term').style.display = 'flex';
+    welcome();
   }, 500);
 }
 
-// ─── TERMINAL ENGINE ──────────────────────────────────────
-const out = document.getElementById('output-area');
-const inp = document.getElementById('cmd-input');
-let history = [], histIdx = -1;
+const outEl = document.getElementById('out');
 
-function println(text, cls = 'result-line') {
+function p(html, cls='rl') {
   const s = document.createElement('span');
-  s.className = 'out-line ' + cls;
-  s.innerHTML = text;
-  out.appendChild(s);
-  out.scrollTop = out.scrollHeight;
+  s.className = 'ln ' + cls;
+  s.innerHTML = html;
+  outEl.appendChild(s);
+  outEl.scrollTop = outEl.scrollHeight;
 }
 
-function printWelcome() {
-  println(`<span class="big">
-   ___ ___ _  _
-  | _ ) __| \\| |
-  | _ \\ _|| .\` |
-  |___/___|_|\\_|</span>`);
-  println(`<span class="accent">  Ben</span> — City Carrier • Combat Engineer • Cybersecurity Student`);
-  println(`  <span class="muted">Cedar Rapids, Iowa</span>`);
-  println(``);
-  println(`<span class="yellow">  Type <span class="accent">help</span> for available commands.</span>`);
-  println(``);
+function welcome() {
+  p(`<span style="color:var(--g);text-shadow:0 0 12px var(--g);white-space:pre"> ____  _____ _   _
+| __ )| ____| \\ | |
+|  _ \\|  _| |  \\| |
+| |_) | |___| |\\  |
+|____/|_____|_| \\_|</span>`);
+  p(`<span class="ac">  Ben Perschek</span> -- Carrier / Engineer / Cyber Student`);
+  p(`  <span class="mu">Cedar Rapids, Iowa</span>`);
+  p(``);
+  p(`  <span class="yl">Tap any button below to explore.</span>`);
+  p(``);
 }
 
-// ─── COMMANDS ─────────────────────────────────────────────
-const COMMANDS = {
+function run(cmd) {
+  p(`<span class="ac">ben@localhost:~$</span> ${cmd}`, 'pl');
+  const fn = CMDS[cmd];
+  if (fn) fn();
+  else {
+    p(`<span class="er">not found: ${cmd}</span>`);
+    p(`<span class="mu">Tap a button below.</span>`);
+    p(``);
+  }
+}
+
+const CMDS = {
 
   help: () => {
-    println(`<span class="accent">AVAILABLE COMMANDS</span>`);
-    println(``);
-    const cmds = [
-      ['whoami',    'Who is Ben?'],
-      ['skills',    'Technical & professional skills'],
-      ['experience','Work history'],
-      ['education', 'Degrees & certifications'],
-      ['military',  'Army National Guard service'],
-      ['projects',  'DIY and side projects'],
-      ['contact',   'How to reach Ben'],
-      ['clear',     'Clear the terminal'],
-      ['sudo hire', 'The most important command'],
-    ];
-    const rows = cmds.map(([c, d]) =>
-      `  <span class="accent">${c.padEnd(14)}</span><span class="muted">${d}</span>`
-    ).join('\n');
-    println(rows);
-    println(``);
+    p(`<span class="ac">-- COMMANDS --</span>`);
+    p(`  <span class="ac">whoami</span>     <span class="mu">Who is Ben</span>`);
+    p(`  <span class="ac">skills</span>     <span class="mu">Technical and professional skills</span>`);
+    p(`  <span class="ac">experience</span> <span class="mu">Work history</span>`);
+    p(`  <span class="ac">education</span>  <span class="mu">Degrees and certs</span>`);
+    p(`  <span class="ac">military</span>   <span class="mu">Army National Guard service</span>`);
+    p(`  <span class="ac">projects</span>   <span class="mu">DIY and side projects</span>`);
+    p(`  <span class="ac">contact</span>    <span class="mu">How to reach Ben</span>`);
+    p(`  <span class="ac">sudo hire</span>  <span class="mu">Most important command</span>`);
+    p(``);
   },
 
   whoami: () => {
-    println(`<span class="accent">╔═ IDENTITY.txt ══════════════════════════════╗</span>`);
-    println(``);
-    println(`  <span class="yellow">Ben</span> — 6'4", Cedar Rapids, Iowa`);
-    println(``);
-    println(`  USPS City Carrier by day.`);
-    println(`  Army National Guard Combat Engineer by duty.`);
-    println(`  WGU Cybersecurity student by ambition.`);
-    println(`  ESP32 tinkerer, motorcycle enthusiast,`);
-    println(`  Seahawks fan, and dad to James &amp; Leo.`);
-    println(``);
-    println(`  Currently transitioning into IT/Cybersecurity`);
-    println(`  with federal employment status &amp; veteran`);
-    println(`  hiring preference as my force multipliers.`);
-    println(``);
-    println(`  Also building Cedar Tech Solutions —`);
-    println(`  mobile IT &amp; security services for small`);
-    println(`  businesses in the Cedar Rapids area.`);
-    println(``);
-    println(`<span class="accent">╚═════════════════════════════════════════════╝</span>`);
-    println(``);
+    p(`<span class="ac">-- IDENTITY --</span>`);
+    p(``);
+    p(`  <span class="yl">Ben Perschek</span>  6'4"  Cedar Rapids, Iowa`);
+    p(``);
+    p(`  USPS City Carrier by day.`);
+    p(`  Army National Guard Combat Engineer by duty.`);
+    p(`  WGU Cybersecurity student by ambition.`);
+    p(`  ESP32 tinkerer, motorcycle guy,`);
+    p(`  Seahawks fan, dad to James and Leo.`);
+    p(``);
+    p(`  Transitioning into IT/Cybersecurity`);
+    p(`  with federal employment status and`);
+    p(`  veteran hiring preference.`);
+    p(``);
+    p(`  Building Cedar Tech Solutions --`);
+    p(`  mobile IT and security for small`);
+    p(`  businesses in Cedar Rapids.`);
+    p(``);
   },
 
   skills: () => {
-    println(`<span class="accent">╔═ SKILLS.cfg ════════════════════════════════╗</span>`);
-    println(``);
-    println(`  <span class="yellow">CYBERSECURITY &amp; IT</span>`);
-    println(`    Network security concepts (WGU coursework)`);
-    println(`    Asset tracking &amp; IT Asset Management (ITAM)`);
-    println(`    Hardware tinkering — ESP32, RFID, IoT`);
-    println(`    Linux (Pop!_OS), basic scripting`);
-    println(``);
-    println(`  <span class="yellow">OPERATIONS &amp; LOGISTICS</span>`);
-    println(`    USPS route management — daily asset accountability`);
-    println(`    Fleet Shop Manager — Clatsop County Public Works`);
-    println(`      (vehicle fleet, tools, inventory, maintenance logs)`);
-    println(`    Army sensitive items accountability &amp; chain-of-custody`);
-    println(`    Route planning, time management, physical operations`);
-    println(``);
-    println(`  <span class="yellow">SOFT SKILLS</span>`);
-    println(`    Veteran discipline &amp; mission focus`);
-    println(`    Customer-facing communication (daily on route)`);
-    println(`    Independent problem-solving`);
-    println(`    Creative systems thinking`);
-    println(``);
-    println(`<span class="accent">╚═════════════════════════════════════════════╝</span>`);
-    println(``);
+    p(`<span class="ac">-- SKILLS --</span>`);
+    p(``);
+    p(`  <span class="yl">CYBERSECURITY / IT</span>`);
+    p(`    Network security (WGU coursework)`);
+    p(`    IT Asset Management (ITAM)`);
+    p(`    ESP32, RFID, IoT hardware`);
+    p(`    Linux (Pop!_OS), scripting`);
+    p(``);
+    p(`  <span class="yl">OPERATIONS / LOGISTICS</span>`);
+    p(`    USPS route and asset management`);
+    p(`    Fleet Shop Manager -- Clatsop County`);
+    p(`    Army sensitive items accountability`);
+    p(`    Chain-of-custody, inventory systems`);
+    p(``);
+    p(`  <span class="yl">SOFT SKILLS</span>`);
+    p(`    Veteran discipline, mission focus`);
+    p(`    Daily customer-facing communication`);
+    p(`    Independent problem-solving`);
+    p(``);
   },
 
   experience: () => {
-    println(`<span class="accent">╔═ EXPERIENCE.log ════════════════════════════╗</span>`);
-    println(``);
-    const jobs = [
-      ['USPS — City Carrier', 'Current', 'Hiawatha, IA',
-       'Daily delivery ops, asset accountability, federal employment status'],
-      ["Brother's Market", '2023–2024', 'Cedar Rapids, IA',
-       'Customer service, inventory, stocking operations'],
-      ['Clatsop County Public Works', '2019–2022', 'Oregon',
-       'Fleet Shop Manager — vehicle fleet tracking, tool inventory,\n    maintenance scheduling, vendor coordination'],
-      ['Safeway', '2017–2019', 'Oregon',
-       'Customer service, team operations'],
-      ['Gearhart Builders Supply', '2016–2017', 'Oregon',
-       'Materials &amp; supply chain, contractor support'],
-    ];
-    jobs.forEach(([title, dates, loc, desc]) => {
-      println(`  <span class="yellow">${title}</span>  <span class="muted">${dates} | ${loc}</span>`);
-      println(`    ${desc}`);
-      println(``);
-    });
-    println(`<span class="accent">╚═════════════════════════════════════════════╝</span>`);
-    println(``);
+    p(`<span class="ac">-- EXPERIENCE --</span>`);
+    p(``);
+    p(`  <span class="yl">USPS -- City Carrier</span>`);
+    p(`  <span class="mu">Current | Hiawatha, IA</span>`);
+    p(`  Delivery ops, asset accountability,`);
+    p(`  federal employment status`);
+    p(``);
+    p(`  <span class="yl">Brother's Market</span>`);
+    p(`  <span class="mu">2023-2024 | Cedar Rapids, IA</span>`);
+    p(`  Customer service, inventory ops`);
+    p(``);
+    p(`  <span class="yl">Clatsop County Public Works</span>`);
+    p(`  <span class="mu">2019-2022 | Oregon</span>`);
+    p(`  Fleet Shop Manager`);
+    p(`  Vehicle tracking, tool inventory,`);
+    p(`  maintenance scheduling, vendors`);
+    p(``);
+    p(`  <span class="yl">Safeway</span>`);
+    p(`  <span class="mu">2017-2019 | Oregon</span>`);
+    p(`  Customer service, team operations`);
+    p(``);
+    p(`  <span class="yl">Gearhart Builders Supply</span>`);
+    p(`  <span class="mu">2016-2017 | Oregon</span>`);
+    p(`  Materials, supply chain, contractors`);
+    p(``);
   },
 
   education: () => {
-    println(`<span class="accent">╔═ EDUCATION.db ══════════════════════════════╗</span>`);
-    println(``);
-    println(`  <span class="yellow">B.S. Cybersecurity &amp; Information Assurance</span>`);
-    println(`  Western Governors University — In Progress`);
-    println(`  <span class="muted">Pursuing fastest viable completion path</span>`);
-    println(``);
-    println(`  <span class="yellow">U.S. Army — Combat Engineer MOS</span>`);
-    println(`  Iowa Army National Guard`);
-    println(`  <span class="muted">Training, leadership, and technical skills</span>`);
-    println(``);
-    println(`  <span class="muted">// CompTIA certs and additional IT credentials</span>`);
-    println(`  <span class="muted">// actively being pursued alongside WGU coursework</span>`);
-    println(``);
-    println(`<span class="accent">╚═════════════════════════════════════════════╝</span>`);
-    println(``);
+    p(`<span class="ac">-- EDUCATION --</span>`);
+    p(``);
+    p(`  <span class="yl">B.S. Cybersecurity and Info Assurance</span>`);
+    p(`  Western Governors University`);
+    p(`  <span class="mu">In Progress</span>`);
+    p(``);
+    p(`  <span class="yl">U.S. Army -- Combat Engineer MOS</span>`);
+    p(`  Iowa Army National Guard`);
+    p(``);
+    p(`  <span class="mu">CompTIA certs actively in progress</span>`);
+    p(``);
   },
 
   military: () => {
-    println(`<span class="accent">╔═ MILITARY.svc ══════════════════════════════╗</span>`);
-    println(``);
-    println(`  <span class="yellow">U.S. Army National Guard</span>`);
-    println(`  MOS: Combat Engineer`);
-    println(`  Unit: Iowa`);
-    println(``);
-    println(`  Relevant skills transferred to civilian sector:`);
-    println(`    → Sensitive items accountability (serialized gear)`);
-    println(`    → Chain-of-custody documentation`);
-    println(`    → High-pressure decision-making`);
-    println(`    → Mission planning &amp; physical operations`);
-    println(`    → Team leadership under stress`);
-    println(``);
-    println(`  <span class="muted">// Veteran hiring preference applies to federal roles</span>`);
-    println(`  <span class="muted">// Currently leveraging toward IT/cybersecurity transition</span>`);
-    println(``);
-    println(`<span class="accent">╚═════════════════════════════════════════════╝</span>`);
-    println(``);
+    p(`<span class="ac">-- MILITARY --</span>`);
+    p(``);
+    p(`  <span class="yl">U.S. Army National Guard</span>`);
+    p(`  MOS: Combat Engineer  |  Iowa`);
+    p(``);
+    p(`  Skills transferred to civilian sector:`);
+    p(`    Sensitive items accountability`);
+    p(`    Chain-of-custody documentation`);
+    p(`    High-pressure decision-making`);
+    p(`    Mission planning and leadership`);
+    p(``);
+    p(`  <span class="mu">Veteran hiring preference -- federal roles</span>`);
+    p(``);
   },
 
   projects: () => {
-    println(`<span class="accent">╔═ PROJECTS.sh ═══════════════════════════════╗</span>`);
-    println(``);
-    println(`  <span class="yellow">Automatic Pet Door — DIY IoT</span>`);
-    println(`  ESP32 + RFID collar tag + linear actuator`);
-    println(`  Suction-cup mounted to sliding patio glass`);
-    println(`  <span class="muted">Status: Parts finalized, firmware in progress</span>`);
-    println(``);
-    println(`  <span class="yellow">Cedar Tech Solutions</span>`);
-    println(`  Mobile IT &amp; security services — Cedar Rapids, IA`);
-    println(`  Targeting small businesses on delivery route`);
-    println(`  <span class="muted">Status: Planning phase</span>`);
-    println(``);
-    println(`  <span class="yellow">E-Bike Conversion</span>`);
-    println(`  Nishiki Pueblo → moto-style electric bike`);
-    println(`  2000W hub motor, LiPo, Sur-Ron aesthetic`);
-    println(`  <span class="muted">Status: Research &amp; sourcing</span>`);
-    println(``);
-    println(`  <span class="yellow">This Terminal Resume</span>`);
-    println(`  You're looking at it. Built with vanilla JS + CSS.`);
-    println(`  Deployed on GitHub Pages.`);
-    println(`  <span class="muted">Status: Running ✓</span>`);
-    println(``);
-    println(`<span class="accent">╚═════════════════════════════════════════════╝</span>`);
-    println(``);
+    p(`<span class="ac">-- PROJECTS --</span>`);
+    p(``);
+    p(`  <span class="yl">Auto Pet Door -- DIY IoT</span>`);
+    p(`  ESP32 + RFID + linear actuator`);
+    p(`  Suction-mounted to sliding patio door`);
+    p(`  <span class="mu">Status: firmware in progress</span>`);
+    p(``);
+    p(`  <span class="yl">Cedar Tech Solutions</span>`);
+    p(`  Mobile IT and security -- Cedar Rapids`);
+    p(`  Targeting small biz on delivery route`);
+    p(`  <span class="mu">Status: planning phase</span>`);
+    p(``);
+    p(`  <span class="yl">E-Bike Conversion</span>`);
+    p(`  Nishiki Pueblo -> moto-style electric`);
+    p(`  2000W hub motor, LiPo, Sur-Ron look`);
+    p(`  <span class="mu">Status: research and sourcing</span>`);
+    p(``);
+    p(`  <span class="yl">This Terminal Resume</span>`);
+    p(`  Vanilla JS/CSS on GitHub Pages`);
+    p(`  <span class="mu">Status: running</span>`);
+    p(``);
   },
 
   contact: () => {
-    println(`<span class="accent">╔═ CONTACT.cfg ═══════════════════════════════╗</span>`);
-    println(``);
-    println(`  <span class="yellow">Location</span>   Cedar Rapids, Iowa`);
-    println(`  <span class="yellow">LinkedIn</span>   linkedin.com/in/YOUR-HANDLE`);
-    println(`  <span class="yellow">GitHub</span>     github.com/YOUR-HANDLE`);
-    println(`  <span class="yellow">Email</span>      your@email.com`);
-    println(``);
-    println(`  <span class="muted">// Update the above with your real links</span>`);
-    println(`  <span class="muted">// before deploying to GitHub Pages</span>`);
-    println(``);
-    println(`<span class="accent">╚═════════════════════════════════════════════╝</span>`);
-    println(``);
+    p(`<span class="ac">-- CONTACT --</span>`);
+    p(``);
+    p(`  <span class="yl">Location</span>  Cedar Rapids, Iowa`);
+    p(`  <span class="yl">LinkedIn</span>  linkedin.com/in/YOUR-HANDLE`);
+    p(`  <span class="yl">GitHub</span>    github.com/perschek`);
+    p(`  <span class="yl">Email</span>     your@email.com`);
+    p(``);
+    p(`  <span class="mu">// swap in your real links before sharing</span>`);
+    p(``);
   },
 
-  clear: () => {
-    out.innerHTML = '';
-  },
+  clear: () => { outEl.innerHTML = ''; },
 
   'sudo hire': () => {
-    println(`<span class="yellow">[sudo] password for ben: </span><span class="muted">**************</span>`);
+    p(`<span class="yl">[sudo] password for ben:</span> <span class="mu">**************</span>`);
     setTimeout(() => {
-      println(``);
-      println(`<span class="accent">  ACCESS GRANTED.</span>`);
-      println(``);
-      println(`  Executing hire_ben.sh...`);
-      println(``);
-      println(`  ✓  Veteran hiring preference — verified`);
-      println(`  ✓  Federal employment status — confirmed`);
-      println(`  ✓  ITAM experience — loaded`);
-      println(`  ✓  Cybersecurity degree — in progress`);
-      println(`  ✓  Mission-focused mindset — hardcoded`);
-      println(`  ✓  Shows up, gets it done — always true`);
-      println(``);
-      println(`<span class="yellow">  Process complete. Recommend immediate interview.</span>`);
-      println(``);
-    }, 800);
+      p(``);
+      p(`<span class="ac">  ACCESS GRANTED.</span>`);
+      p(``);
+      p(`  Executing hire_ben.sh...`);
+      p(``);
+      p(`  [OK] Veteran hiring preference  -- verified`);
+      p(`  [OK] Federal employment status  -- confirmed`);
+      p(`  [OK] ITAM experience            -- loaded`);
+      p(`  [OK] Cybersecurity degree       -- in progress`);
+      p(`  [OK] Mission-focused mindset    -- hardcoded`);
+      p(`  [OK] Shows up, gets it done     -- always true`);
+      p(``);
+      p(`<span class="yl">  Recommend immediate interview.</span>`);
+      p(``);
+    }, 900);
   },
 
 };
 
-// unknown command fallback
-function runCommand(raw) {
-  const cmd = raw.trim().toLowerCase();
-  if (!cmd) return;
-
-  history.unshift(raw);
-  histIdx = -1;
-
-  println(`<span class="accent">ben@localhost:~$</span> ${escHtml(raw)}`, 'prompt-line');
-
-  if (COMMANDS[cmd]) {
-    COMMANDS[cmd]();
-  } else {
-    println(`<span class="error">bash: ${escHtml(cmd)}: command not found</span>`);
-    println(`<span class="muted">Type <span style="color:var(--green)">help</span> to see available commands.</span>`);
-    println(``);
-  }
-}
-
-function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-// input handling
-inp.addEventListener('keydown', e => {
-  if (e.key === 'Enter') {
-    const v = inp.value;
-    inp.value = '';
-    runCommand(v);
-  } else if (e.key === 'ArrowUp') {
-    e.preventDefault();
-    if (histIdx < history.length - 1) { histIdx++; inp.value = history[histIdx]; }
-  } else if (e.key === 'ArrowDown') {
-    e.preventDefault();
-    if (histIdx > 0) { histIdx--; inp.value = history[histIdx]; }
-    else { histIdx = -1; inp.value = ''; }
-  }
-});
-
-// keep focus
-document.addEventListener('click', () => inp.focus());
-
-// start — wait for DOM + slight delay so browser paints the black bg first
-document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(runBoot, 100);
-});
+document.addEventListener('DOMContentLoaded', () => setTimeout(runBoot, 80));
 </script>
 
 </body>
