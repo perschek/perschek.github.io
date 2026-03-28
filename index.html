@@ -1,241 +1,627 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PERSCHEK_B : OPERATIVE TERMINAL</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BEN // SYSTEM INIT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap"></noscript>
+<style>
 
-        body, html {
-            margin: 0;
-            padding: 0;
-            background-color: #050505;
-            color: #33ff33;
-            font-family: 'VT323', monospace;
-            font-size: 1.2rem;
-            height: 100vh;
-            overflow: hidden;
-        }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* CRT Effects */
-        .crt::before {
-            content: " ";
-            display: block;
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 2;
-            background-size: 100% 2px, 3px 100%;
-            pointer-events: none;
-        }
+:root {
+–green: #00ff41;
+–green-dim: #00bb30;
+–green-faint: #003d0f;
+–green-mid: #00cc33;
+–bg: #010b01;
+–scanline: rgba(0,0,0,0.15);
+}
 
-        .crt::after {
-            content: " ";
-            display: block;
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
-            background: radial-gradient(circle, rgba(0,0,0,0) 60%, rgba(0,0,0,0.4) 100%);
-            z-index: 3;
-            pointer-events: none;
-        }
+html, body {
+width: 100%; height: 100%;
+background: var(–bg);
+color: var(–green);
+font-family: ‘Share Tech Mono’, ‘Courier New’, Courier, monospace;
+overflow: hidden;
+cursor: auto;
+}
 
-        .container {
-            padding: 2rem;
-            position: relative;
-            z-index: 1;
-            height: 100%;
-            box-sizing: border-box;
-            text-shadow: 0 0 5px #33ff33;
-        }
+@media (pointer: fine) {
+html, body { cursor: none; }
+}
 
-        /* Boot Sequence */
-        #boot-screen {
-            white-space: pre-wrap;
-        }
+#cursor {
+position: fixed;
+width: 18px; height: 18px;
+border: 2px solid var(–green);
+border-radius: 50%;
+pointer-events: none;
+z-index: 9999;
+transform: translate(-50%, -50%);
+transition: transform 0.05s;
+mix-blend-mode: screen;
+display: none;
+}
 
-        /* Desktop Interface */
-        #desktop {
-            display: none;
-        }
+@media (pointer: fine) {
+#cursor { display: block; }
+}
+#cursor::after {
+content: ‘’;
+position: absolute;
+width: 4px; height: 4px;
+background: var(–green);
+border-radius: 50%;
+top: 50%; left: 50%;
+transform: translate(-50%,-50%);
+}
 
-        .header {
-            border-bottom: 2px solid #33ff33;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-        }
+/* scanlines overlay */
+body::before {
+content: ‘’;
+position: fixed;
+inset: 0;
+background: repeating-linear-gradient(
+to bottom,
+transparent 0px,
+transparent 3px,
+var(–scanline) 3px,
+var(–scanline) 4px
+);
+pointer-events: none;
+z-index: 100;
+}
 
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
+/* CRT flicker */
+body::after {
+content: ‘’;
+position: fixed;
+inset: 0;
+background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.6) 100%);
+pointer-events: none;
+z-index: 99;
+animation: flicker 8s infinite;
+}
 
-        /* Clickable Icons */
-        .icon {
-            border: 1px solid #33ff33;
-            padding: 1.5rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            background: rgba(51, 255, 51, 0.05);
-        }
+@keyframes flicker {
+0%,100% { opacity: 1; }
+92% { opacity: 1; }
+93% { opacity: 0.85; }
+94% { opacity: 1; }
+96% { opacity: 0.9; }
+97% { opacity: 1; }
+}
 
-        .icon:hover {
-            background: #33ff33;
-            color: #050505;
-            box-shadow: 0 0 15px #33ff33;
-        }
+/* BOOT SCREEN */
+#boot {
+position: fixed;
+inset: 0;
+padding: 16px 16px;
+font-family: ‘Share Tech Mono’, ‘Courier New’, Courier, monospace;
+font-size: clamp(11px, 3vw, 14px);
+line-height: 1.6;
+overflow-y: auto;
+z-index: 10;
+}
 
-        .icon-art {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-        }
+#boot-lines { white-space: pre; }
 
-        /* Content Window */
-        #content-window {
-            display: none;
-            border: 1px solid #33ff33;
-            padding: 1.5rem;
-            background: rgba(0, 0, 0, 0.8);
-            min-height: 200px;
-        }
+.boot-line { display: block; opacity: 0; animation: fadein 0.01s forwards; }
+.ok    { color: var(–green); }
+.warn  { color: #ffcc00; }
+.err   { color: #ff4444; }
+.dim   { color: var(–green-dim); }
+.head  { color: #00ffff; font-size: 1.1em; }
 
-        .close-btn {
-            float: right;
-            cursor: pointer;
-            color: #33ff33;
-        }
+@keyframes fadein { to { opacity: 1; } }
 
-        .close-btn:hover {
-            color: #fff;
-        }
+/* BIOS header art */
+#bios-art {
+font-family: ‘VT323’, monospace;
+font-size: clamp(22px, 4vw, 42px);
+color: var(–green);
+text-shadow: 0 0 20px var(–green), 0 0 40px var(–green-dim);
+margin-bottom: 12px;
+letter-spacing: 2px;
+}
 
-        .blink {
-            animation: blinker 1s linear infinite;
-        }
+/* TERMINAL */
+#terminal {
+position: fixed;
+inset: 0;
+display: none;
+flex-direction: column;
+padding: 0;
+z-index: 10;
+}
 
-        @keyframes blinker {
-            50% { opacity: 0; }
-        }
-    </style>
+#term-header {
+background: var(–green-faint);
+border-bottom: 1px solid var(–green-dim);
+padding: 6px 16px;
+display: flex;
+align-items: center;
+gap: 12px;
+font-size: 12px;
+color: var(–green-dim);
+flex-shrink: 0;
+}
+
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.dot-r { background: #ff5f57; }
+.dot-y { background: #febc2e; }
+.dot-g { background: #28c840; }
+
+#term-title {
+flex: 1;
+text-align: center;
+font-family: ‘Share Tech Mono’, monospace;
+letter-spacing: 3px;
+font-size: 11px;
+color: var(–green);
+text-shadow: 0 0 8px var(–green);
+}
+
+#output-area {
+flex: 1;
+overflow-y: auto;
+padding: 20px 24px 8px;
+font-size: clamp(12px, 1.6vw, 14px);
+line-height: 1.7;
+scrollbar-width: thin;
+scrollbar-color: var(–green-dim) transparent;
+}
+
+#output-area::-webkit-scrollbar { width: 6px; }
+#output-area::-webkit-scrollbar-thumb { background: var(–green-dim); border-radius: 3px; }
+
+.out-line { display: block; white-space: pre-wrap; word-break: break-word; }
+.prompt-line { color: var(–green); }
+.result-line { color: var(–green-mid); }
+.accent { color: #00ffff; }
+.yellow { color: #ffdd57; }
+.muted  { color: var(–green-dim); }
+.error  { color: #ff5555; }
+.big    { font-family: ‘VT323’, monospace; font-size: 2em; color: var(–green); text-shadow: 0 0 10px var(–green); line-height: 1.2; }
+
+#input-row {
+display: flex;
+align-items: center;
+padding: 10px 24px 16px;
+border-top: 1px solid var(–green-faint);
+gap: 8px;
+flex-shrink: 0;
+}
+
+#prompt-label {
+color: var(–green);
+text-shadow: 0 0 8px var(–green);
+white-space: nowrap;
+font-size: clamp(12px, 1.6vw, 14px);
+flex-shrink: 0;
+}
+
+#cmd-input {
+flex: 1;
+background: transparent;
+border: none;
+outline: none;
+color: var(–green);
+font-family: ‘Share Tech Mono’, monospace;
+font-size: clamp(12px, 1.6vw, 14px);
+caret-color: var(–green);
+text-shadow: 0 0 6px var(–green);
+}
+
+/* glitch animation for banner */
+@keyframes glitch {
+0%,100% { text-shadow: 0 0 20px var(–green), 0 0 40px var(–green-dim); transform: none; }
+20% { text-shadow: -2px 0 #ff0000, 2px 0 #00ffff; transform: translateX(1px); }
+21% { text-shadow: 0 0 20px var(–green); transform: none; }
+60% { text-shadow: 2px 0 #ff00ff, -2px 0 #00ff00; transform: translateX(-1px); }
+61% { text-shadow: 0 0 20px var(–green); transform: none; }
+}
+
+.glitch { animation: glitch 6s infinite; display: inline-block; }
+
+/* help table */
+.cmd-table { border-collapse: collapse; margin: 4px 0 8px; width: 100%; max-width: 560px; }
+.cmd-table td { padding: 1px 16px 1px 0; vertical-align: top; }
+.cmd-table td:first-child { color: #00ffff; white-space: nowrap; min-width: 120px; }
+.cmd-table td:last-child { color: var(–green-mid); }
+</style>
+
 </head>
-<body class="crt">
+<body>
 
-<div class="container">
-    <div id="boot-screen"><span id="boot-text"></span><span class="blink">_</span></div>
+<div id="cursor"></div>
 
-    <div id="desktop">
-        <div class="header">
-            <h1>BENJAMIN ADAM PERSCHEK</h1>
-            <p>FEDERAL OPS TECH & SYSTEMS ASSET ACCOUNTABILITY</p>
-            <p>LOCATION: Cedar Rapids, IA | CLEARANCE: U.S. Citizen | VET PREF: 5-Point TR</p>
-        </div>
+<!-- ═══ BOOT SCREEN ═══ -->
 
-        <div class="grid-container">
-            <div class="icon" onclick="openFile('mission')">
-                <div class="icon-art">[!]</div>
-                <div>MISSION_BRIEF.EXE</div>
-            </div>
-            <div class="icon" onclick="openFile('career')">
-                <div class="icon-art">[*]</div>
-                <div>CAREER_LOG.TXT</div>
-            </div>
-            <div class="icon" onclick="openFile('training')">
-                <div class="icon-art">[&]</div>
-                <div>TRAINING_LOG.SYS</div>
-            </div>
-            <div class="icon" onclick="openFile('awards')">
-                <div class="icon-art">[+]</div>
-                <div>COMMENDATIONS.DAT</div>
-            </div>
-        </div>
+<div id="boot">
+  <div id="bios-art">
+    <div class="glitch"> ___ ___ _  _</div>
+    <div class="glitch">| _ ) __| \| |</div>
+    <div class="glitch">| _ \ _|| .` |</div>
+    <div class="glitch">|___/___|_|\_|</div>
+    <div class="glitch" style="font-size:0.5em;margin-top:6px;letter-spacing:1px;">FIELD SYSTEMS // v2.6 // PERSCHEK</div>
+  </div>
+  <div id="boot-lines"></div>
+</div>
 
-        <div id="content-window">
-            <div class="close-btn" onclick="closeFile()">[X] CLOSE</div>
-            <h2 id="file-title"></h2>
-            <div id="file-content"></div>
-        </div>
-        
-        <p>C:\> <span class="blink">_</span></p>
-    </div>
+<!-- ═══ TERMINAL ═══ -->
+
+<div id="terminal">
+  <div id="term-header">
+    <span class="dot dot-r"></span>
+    <span class="dot dot-y"></span>
+    <span class="dot dot-g"></span>
+    <span id="term-title">BEN@LOCALHOST — BASH — 80×24</span>
+    <span style="font-size:11px;color:var(--green-dim)">[ type <span style="color:var(--green)">help</span> to get started ]</span>
+  </div>
+  <div id="output-area"></div>
+  <div id="input-row">
+    <span id="prompt-label">ben@localhost:~$</span>
+    <input id="cmd-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" autofocus />
+  </div>
 </div>
 
 <script>
-    // Resume Data Content
-    const resumeData = {
-        mission: {
-            title: "MISSION BRIEF",
-            [span_0](start_span)content: "Spent 15+ years making sure things don't get lost, broken, or unaccounted for weapons in Kuwait, heavy equipment in Oregon, parcels across Iowa.[span_0](end_span)<br><br>Zero losses. Zero discrepancies. Every single time. [span_1](start_span)Federal background, veteran's preference, and enough real-world ops experience that 'risk management' isn't just a buzzword it's what I did in a war zone.[span_1](end_span)[span_2](start_span)<br><br>Now bringing that same discipline to IT systems, asset management, and technical operations.[span_2](end_span)"
-        },
-        career: {
-            title: "CAREER LOG",
-            content: "<b>> City Carrier | [span_3](start_span)USPS (08/2021 - Present)</b><br>Maintain accountability for high-value parcels and certified mail using scan-based tracking systems.[span_3](end_span)<br><br><b>> Assistant Manager | [span_4](start_span)Brother's Market (07/2018 - 08/2020)</b><br>Managed POS systems and performed hardware troubleshooting to maintain system uptime.[span_4](end_span) [span_5](start_span)Developed inventory tracking procedures for high-value items, reducing asset shrinkage by 15%.[span_5](end_span)<br><br><b>> Road Maintenance & Fleet Shop Manager | [span_6](start_span)Clatsop County (2015 - 2018)</b><br>Managed fleet inventory for multi-vehicle heavy equipment operations across county road maintenance.[span_6](end_span) [span_7](start_span)Tracked maintenance schedules and performed inspections to ensure operational readiness.[span_7](end_span)<br><br><b>> Interior Electrician | U.S. Army National Guard (11/2010 - 2016)</b><br>Maintained serial-number-level accountability for weapons, radios, and controlled equipment. [span_8](start_span)Zero discrepancies.[span_8](end_span) [span_9](start_span)Applied Composite Risk Management protocols under operational conditions.[span_9](end_span)"
-        },
-        training: {
-            title: "TRAINING & EDUCATION",
-            [span_10](start_span)content: "<b>> WGU BS Cybersecurity & IA 2026</b>[span_10](end_span)[span_11](start_span)<br>Starting Summer 2026[span_11](end_span)<br><br><b>> Interior Electrician Course (721-12R10)</b><br>U.S. Army Engineer School, Ft. [span_12](start_span)Leonard Wood MO - 257 hrs[span_12](end_span)[span_13](start_span)<br><br><b>> Structured Self Development (SSD I)</b><br>SGM Academy Leadership & Task Management - 80 hrs[span_13](end_span)[span_14](start_span)<br><br><b>> Composite Risk Management Basic</b><br>Army Safety Center[span_14](end_span)"
-        },
-        awards: {
-            title: "COMMENDATIONS",
-            [span_15](start_span)content: "[+] Army Achievement Medal (2nd Award)[span_15](end_span)[span_16](start_span)<br>[+] Global War on Terrorism Service Medal[span_16](end_span)[span_17](start_span)<br>[+] Armed Forces Reserve Medal w/ M Device[span_17](end_span)[span_18](start_span)<br>[+] Global War on Terrorism Expeditionary Medal[span_18](end_span)[span_19](start_span)<br>[+] National Defense Service Medal[span_19](end_span)"
-        }
-    };
+// ─── cursor ───────────────────────────────────────────────
+const cur = document.getElementById('cursor');
+document.addEventListener('mousemove', e => {
+  cur.style.left = e.clientX + 'px';
+  cur.style.top  = e.clientY + 'px';
+});
 
-    // Boot Sequence Logic
-    const bootLines = [
-        [span_20](start_span)"operative file perschek_b: session_active[span_20](end_span)",
-        "INITIALIZING BIOS...",
-        "MEMORY CHECK: OK (640K RAM SYSTEM)",
-        "MOUNTING DRIVE C: ...",
-        "LOADING ENCRYPTION PROTOCOLS...",
-        "ACCESS GRANTED.",
-        [span_21](start_span)"$/load_operative-name= perschek-clearance general[span_21](end_span)",
-        "LAUNCHING GUI..."
+// ─── BOOT SEQUENCE ────────────────────────────────────────
+const bootLines = [
+  { text: 'BEN-OS BIOS v2.6.1 — Copyright 2024 Field Systems LLC', cls: 'dim', delay: 0 },
+  { text: 'CPU: US Army Combat Engineer • Iowa National Guard', cls: 'ok', delay: 120 },
+  { text: 'RAM: 250lb of bad decisions and good intentions', cls: 'ok', delay: 200 },
+  { text: '', delay: 260 },
+  { text: 'Initializing hardware...', cls: 'dim', delay: 320 },
+  { text: '  [  OK  ] Boots detected (size 14, steel-toed)', cls: 'ok', delay: 440 },
+  { text: '  [  OK  ] Coffee module loaded', cls: 'ok', delay: 560 },
+  { text: '  [  OK  ] Great Pyrenees (Milo) — bark daemon active', cls: 'ok', delay: 680 },
+  { text: '', delay: 740 },
+  { text: 'Loading kernel modules...', cls: 'dim', delay: 800 },
+  { text: '  [  OK  ] usps_city_carrier.ko                    LOADED', cls: 'ok', delay: 920 },
+  { text: '  [  OK  ] army_national_guard.ko                  LOADED', cls: 'ok', delay: 1000 },
+  { text: '  [  OK  ] wgu_cybersecurity_bs.ko                 LOADING', cls: 'warn', delay: 1080 },
+  { text: '  [  OK  ] itam_asset_tracking.ko                  LOADED', cls: 'ok', delay: 1160 },
+  { text: '  [  OK  ] esp32_diy_hacker.ko                     LOADED', cls: 'ok', delay: 1240 },
+  { text: '  [ WARN ] cedar_tech_solutions.ko              IN PROGRESS', cls: 'warn', delay: 1320 },
+  { text: '', delay: 1380 },
+  { text: 'Running fsck on experience partition...', cls: 'dim', delay: 1440 },
+  { text: '  [  OK  ] /dev/usps — route integrity verified', cls: 'ok', delay: 1560 },
+  { text: '  [  OK  ] /dev/army — sensitive items accountability OK', cls: 'ok', delay: 1640 },
+  { text: '  [  OK  ] /dev/fleet — Clatsop County fleet records clean', cls: 'ok', delay: 1720 },
+  { text: '', delay: 1780 },
+  { text: 'Mounting filesystems...', cls: 'dim', delay: 1840 },
+  { text: '  [  OK  ] Cedar Rapids, IA — /home/ben             mounted', cls: 'ok', delay: 1940 },
+  { text: '  [  OK  ] James + Leo — /home/ben/kids             mounted', cls: 'ok', delay: 2020 },
+  { text: '  [  OK  ] Kelly — /home/ben/partner                mounted', cls: 'ok', delay: 2100 },
+  { text: '', delay: 2160 },
+  { text: 'Starting network services...', cls: 'dim', delay: 2220 },
+  { text: '  [  OK  ] LinkedIn interface up', cls: 'ok', delay: 2320 },
+  { text: '  [  OK  ] GitHub Pages — serving on :443', cls: 'ok', delay: 2400 },
+  { text: '', delay: 2480 },
+  { text: '████████████████████████████████████ 100%', cls: 'ok', delay: 2560 },
+  { text: '', delay: 2660 },
+  { text: 'BEN-OS ready. Dropping to shell...', cls: 'head', delay: 2760 },
+  { text: '', delay: 2900 },
+];
+
+const bootContainer = document.getElementById('boot-lines');
+
+function runBoot() {
+  bootLines.forEach(({ text, cls, delay }) => {
+    setTimeout(() => {
+      const span = document.createElement('span');
+      span.className = 'boot-line ' + (cls || '');
+      span.textContent = text;
+      bootContainer.appendChild(span);
+    }, delay);
+  });
+
+  const lastDelay = bootLines[bootLines.length - 1].delay;
+  setTimeout(switchToTerminal, lastDelay + 600);
+}
+
+function switchToTerminal() {
+  const boot = document.getElementById('boot');
+  const term = document.getElementById('terminal');
+  boot.style.transition = 'opacity 0.5s';
+  boot.style.opacity = '0';
+  setTimeout(() => {
+    boot.style.display = 'none';
+    term.style.display = 'flex';
+    printWelcome();
+    document.getElementById('cmd-input').focus();
+  }, 500);
+}
+
+// ─── TERMINAL ENGINE ──────────────────────────────────────
+const out = document.getElementById('output-area');
+const inp = document.getElementById('cmd-input');
+let history = [], histIdx = -1;
+
+function println(text, cls = 'result-line') {
+  const s = document.createElement('span');
+  s.className = 'out-line ' + cls;
+  s.innerHTML = text;
+  out.appendChild(s);
+  out.scrollTop = out.scrollHeight;
+}
+
+function printWelcome() {
+  println(`<span class="big">
+   ___ ___ _  _
+  | _ ) __| \\| |
+  | _ \\ _|| .\` |
+  |___/___|_|\\_|</span>`);
+  println(`<span class="accent">  Ben</span> — City Carrier • Combat Engineer • Cybersecurity Student`);
+  println(`  <span class="muted">Cedar Rapids, Iowa</span>`);
+  println(``);
+  println(`<span class="yellow">  Type <span class="accent">help</span> for available commands.</span>`);
+  println(``);
+}
+
+// ─── COMMANDS ─────────────────────────────────────────────
+const COMMANDS = {
+
+  help: () => {
+    println(`<span class="accent">AVAILABLE COMMANDS</span>`);
+    println(``);
+    const cmds = [
+      ['whoami',    'Who is Ben?'],
+      ['skills',    'Technical & professional skills'],
+      ['experience','Work history'],
+      ['education', 'Degrees & certifications'],
+      ['military',  'Army National Guard service'],
+      ['projects',  'DIY and side projects'],
+      ['contact',   'How to reach Ben'],
+      ['clear',     'Clear the terminal'],
+      ['sudo hire', 'The most important command'],
     ];
+    const rows = cmds.map(([c, d]) =>
+      `  <span class="accent">${c.padEnd(14)}</span><span class="muted">${d}</span>`
+    ).join('\n');
+    println(rows);
+    println(``);
+  },
 
-    let bootIndex = 0;
-    const bootTextElement = document.getElementById('boot-text');
-    const bootScreen = document.getElementById('boot-screen');
-    const desktop = document.getElementById('desktop');
+  whoami: () => {
+    println(`<span class="accent">╔═ IDENTITY.txt ══════════════════════════════╗</span>`);
+    println(``);
+    println(`  <span class="yellow">Ben</span> — 6'4", Cedar Rapids, Iowa`);
+    println(``);
+    println(`  USPS City Carrier by day.`);
+    println(`  Army National Guard Combat Engineer by duty.`);
+    println(`  WGU Cybersecurity student by ambition.`);
+    println(`  ESP32 tinkerer, motorcycle enthusiast,`);
+    println(`  Seahawks fan, and dad to James &amp; Leo.`);
+    println(``);
+    println(`  Currently transitioning into IT/Cybersecurity`);
+    println(`  with federal employment status &amp; veteran`);
+    println(`  hiring preference as my force multipliers.`);
+    println(``);
+    println(`  Also building Cedar Tech Solutions —`);
+    println(`  mobile IT &amp; security services for small`);
+    println(`  businesses in the Cedar Rapids area.`);
+    println(``);
+    println(`<span class="accent">╚═════════════════════════════════════════════╝</span>`);
+    println(``);
+  },
 
-    function typeBootSequence() {
-        if (bootIndex < bootLines.length) {
-            bootTextElement.innerHTML += bootLines[bootIndex] + "<br>";
-            bootIndex++;
-            setTimeout(typeBootSequence, Math.random() * 300 + 200);
-        } else {
-            setTimeout(() => {
-                bootScreen.style.display = 'none';
-                desktop.style.display = 'block';
-            }, 800);
-        }
-    }
+  skills: () => {
+    println(`<span class="accent">╔═ SKILLS.cfg ════════════════════════════════╗</span>`);
+    println(``);
+    println(`  <span class="yellow">CYBERSECURITY &amp; IT</span>`);
+    println(`    Network security concepts (WGU coursework)`);
+    println(`    Asset tracking &amp; IT Asset Management (ITAM)`);
+    println(`    Hardware tinkering — ESP32, RFID, IoT`);
+    println(`    Linux (Pop!_OS), basic scripting`);
+    println(``);
+    println(`  <span class="yellow">OPERATIONS &amp; LOGISTICS</span>`);
+    println(`    USPS route management — daily asset accountability`);
+    println(`    Fleet Shop Manager — Clatsop County Public Works`);
+    println(`      (vehicle fleet, tools, inventory, maintenance logs)`);
+    println(`    Army sensitive items accountability &amp; chain-of-custody`);
+    println(`    Route planning, time management, physical operations`);
+    println(``);
+    println(`  <span class="yellow">SOFT SKILLS</span>`);
+    println(`    Veteran discipline &amp; mission focus`);
+    println(`    Customer-facing communication (daily on route)`);
+    println(`    Independent problem-solving`);
+    println(`    Creative systems thinking`);
+    println(``);
+    println(`<span class="accent">╚═════════════════════════════════════════════╝</span>`);
+    println(``);
+  },
 
-    // Start boot sequence on load
-    window.onload = typeBootSequence;
+  experience: () => {
+    println(`<span class="accent">╔═ EXPERIENCE.log ════════════════════════════╗</span>`);
+    println(``);
+    const jobs = [
+      ['USPS — City Carrier', 'Current', 'Hiawatha, IA',
+       'Daily delivery ops, asset accountability, federal employment status'],
+      ["Brother's Market", '2023–2024', 'Cedar Rapids, IA',
+       'Customer service, inventory, stocking operations'],
+      ['Clatsop County Public Works', '2019–2022', 'Oregon',
+       'Fleet Shop Manager — vehicle fleet tracking, tool inventory,\n    maintenance scheduling, vendor coordination'],
+      ['Safeway', '2017–2019', 'Oregon',
+       'Customer service, team operations'],
+      ['Gearhart Builders Supply', '2016–2017', 'Oregon',
+       'Materials &amp; supply chain, contractor support'],
+    ];
+    jobs.forEach(([title, dates, loc, desc]) => {
+      println(`  <span class="yellow">${title}</span>  <span class="muted">${dates} | ${loc}</span>`);
+      println(`    ${desc}`);
+      println(``);
+    });
+    println(`<span class="accent">╚═════════════════════════════════════════════╝</span>`);
+    println(``);
+  },
 
-    // File Handling Logic
-    function openFile(fileKey) {
-        const windowEl = document.getElementById('content-window');
-        const titleEl = document.getElementById('file-title');
-        const contentEl = document.getElementById('file-content');
-        
-        titleEl.innerHTML = resumeData[fileKey].title;
-        contentEl.innerHTML = resumeData[fileKey].content;
-        windowEl.style.display = 'block';
-    }
+  education: () => {
+    println(`<span class="accent">╔═ EDUCATION.db ══════════════════════════════╗</span>`);
+    println(``);
+    println(`  <span class="yellow">B.S. Cybersecurity &amp; Information Assurance</span>`);
+    println(`  Western Governors University — In Progress`);
+    println(`  <span class="muted">Pursuing fastest viable completion path</span>`);
+    println(``);
+    println(`  <span class="yellow">U.S. Army — Combat Engineer MOS</span>`);
+    println(`  Iowa Army National Guard`);
+    println(`  <span class="muted">Training, leadership, and technical skills</span>`);
+    println(``);
+    println(`  <span class="muted">// CompTIA certs and additional IT credentials</span>`);
+    println(`  <span class="muted">// actively being pursued alongside WGU coursework</span>`);
+    println(``);
+    println(`<span class="accent">╚═════════════════════════════════════════════╝</span>`);
+    println(``);
+  },
 
-    function closeFile() {
-        document.getElementById('content-window').style.display = 'none';
-    }
+  military: () => {
+    println(`<span class="accent">╔═ MILITARY.svc ══════════════════════════════╗</span>`);
+    println(``);
+    println(`  <span class="yellow">U.S. Army National Guard</span>`);
+    println(`  MOS: Combat Engineer`);
+    println(`  Unit: Iowa`);
+    println(``);
+    println(`  Relevant skills transferred to civilian sector:`);
+    println(`    → Sensitive items accountability (serialized gear)`);
+    println(`    → Chain-of-custody documentation`);
+    println(`    → High-pressure decision-making`);
+    println(`    → Mission planning &amp; physical operations`);
+    println(`    → Team leadership under stress`);
+    println(``);
+    println(`  <span class="muted">// Veteran hiring preference applies to federal roles</span>`);
+    println(`  <span class="muted">// Currently leveraging toward IT/cybersecurity transition</span>`);
+    println(``);
+    println(`<span class="accent">╚═════════════════════════════════════════════╝</span>`);
+    println(``);
+  },
+
+  projects: () => {
+    println(`<span class="accent">╔═ PROJECTS.sh ═══════════════════════════════╗</span>`);
+    println(``);
+    println(`  <span class="yellow">Automatic Pet Door — DIY IoT</span>`);
+    println(`  ESP32 + RFID collar tag + linear actuator`);
+    println(`  Suction-cup mounted to sliding patio glass`);
+    println(`  <span class="muted">Status: Parts finalized, firmware in progress</span>`);
+    println(``);
+    println(`  <span class="yellow">Cedar Tech Solutions</span>`);
+    println(`  Mobile IT &amp; security services — Cedar Rapids, IA`);
+    println(`  Targeting small businesses on delivery route`);
+    println(`  <span class="muted">Status: Planning phase</span>`);
+    println(``);
+    println(`  <span class="yellow">E-Bike Conversion</span>`);
+    println(`  Nishiki Pueblo → moto-style electric bike`);
+    println(`  2000W hub motor, LiPo, Sur-Ron aesthetic`);
+    println(`  <span class="muted">Status: Research &amp; sourcing</span>`);
+    println(``);
+    println(`  <span class="yellow">This Terminal Resume</span>`);
+    println(`  You're looking at it. Built with vanilla JS + CSS.`);
+    println(`  Deployed on GitHub Pages.`);
+    println(`  <span class="muted">Status: Running ✓</span>`);
+    println(``);
+    println(`<span class="accent">╚═════════════════════════════════════════════╝</span>`);
+    println(``);
+  },
+
+  contact: () => {
+    println(`<span class="accent">╔═ CONTACT.cfg ═══════════════════════════════╗</span>`);
+    println(``);
+    println(`  <span class="yellow">Location</span>   Cedar Rapids, Iowa`);
+    println(`  <span class="yellow">LinkedIn</span>   linkedin.com/in/YOUR-HANDLE`);
+    println(`  <span class="yellow">GitHub</span>     github.com/YOUR-HANDLE`);
+    println(`  <span class="yellow">Email</span>      your@email.com`);
+    println(``);
+    println(`  <span class="muted">// Update the above with your real links</span>`);
+    println(`  <span class="muted">// before deploying to GitHub Pages</span>`);
+    println(``);
+    println(`<span class="accent">╚═════════════════════════════════════════════╝</span>`);
+    println(``);
+  },
+
+  clear: () => {
+    out.innerHTML = '';
+  },
+
+  'sudo hire': () => {
+    println(`<span class="yellow">[sudo] password for ben: </span><span class="muted">**************</span>`);
+    setTimeout(() => {
+      println(``);
+      println(`<span class="accent">  ACCESS GRANTED.</span>`);
+      println(``);
+      println(`  Executing hire_ben.sh...`);
+      println(``);
+      println(`  ✓  Veteran hiring preference — verified`);
+      println(`  ✓  Federal employment status — confirmed`);
+      println(`  ✓  ITAM experience — loaded`);
+      println(`  ✓  Cybersecurity degree — in progress`);
+      println(`  ✓  Mission-focused mindset — hardcoded`);
+      println(`  ✓  Shows up, gets it done — always true`);
+      println(``);
+      println(`<span class="yellow">  Process complete. Recommend immediate interview.</span>`);
+      println(``);
+    }, 800);
+  },
+
+};
+
+// unknown command fallback
+function runCommand(raw) {
+  const cmd = raw.trim().toLowerCase();
+  if (!cmd) return;
+
+  history.unshift(raw);
+  histIdx = -1;
+
+  println(`<span class="accent">ben@localhost:~$</span> ${escHtml(raw)}`, 'prompt-line');
+
+  if (COMMANDS[cmd]) {
+    COMMANDS[cmd]();
+  } else {
+    println(`<span class="error">bash: ${escHtml(cmd)}: command not found</span>`);
+    println(`<span class="muted">Type <span style="color:var(--green)">help</span> to see available commands.</span>`);
+    println(``);
+  }
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// input handling
+inp.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const v = inp.value;
+    inp.value = '';
+    runCommand(v);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (histIdx < history.length - 1) { histIdx++; inp.value = history[histIdx]; }
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (histIdx > 0) { histIdx--; inp.value = history[histIdx]; }
+    else { histIdx = -1; inp.value = ''; }
+  }
+});
+
+// keep focus
+document.addEventListener('click', () => inp.focus());
+
+// start — wait for DOM + slight delay so browser paints the black bg first
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(runBoot, 100);
+});
 </script>
 
 </body>
