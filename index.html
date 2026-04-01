@@ -4,473 +4,598 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BEN PERSCHEK // SYS</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" media="print" onload="this.media='all'">
+<title>Potty Kingdom II</title>
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-:root {
-–g:  #00ff41;
-–gd: #00bb30;
-–gf: #001a05;
-–gm: #00cc33;
-–bg: #010b01;
-–cy: #00ffff;
-–yl: #ffdd57;
+body {
+min-height: 100vh;
+background: radial-gradient(ellipse at 30% 20%, #2d0845 0%, #0a0520 60%, #050210 100%);
+font-family: Georgia, serif;
+color: #f0e6ff;
+display: flex;
+flex-direction: column;
+align-items: center;
+padding: 16px;
+overflow-x: hidden;
 }
 
-html, body {
-width: 100%; height: 100%;
-background: var(–bg);
-color: var(–g);
-font-family: ‘Share Tech Mono’, ‘Courier New’, Courier, monospace;
+@keyframes fall { to { transform: translateY(115vh) rotate(400deg); } }
+@keyframes bob { 0%,100%{transform:translateY(0) rotate(-2deg)} 50%{transform:translateY(-8px) rotate(2deg)} }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.3;transform:scale(0.85)} }
+@keyframes slideIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+@keyframes flashBig { 0%{opacity:0;transform:translate(-50%,-50%) scale(0.3)} 30%{opacity:1;transform:translate(-50%,-50%) scale(2.5)} 100%{opacity:0;transform:translate(-50%,-50%) scale(5)} }
+@keyframes popIn { 0%{opacity:0;transform:scale(0.6)} 70%{transform:scale(1.1)} 100%{opacity:1;transform:scale(1)} }
+@keyframes glow { 0%,100%{box-shadow:0 0 30px rgba(255,215,0,0.1),0 20px 60px rgba(0,0,0,0.8)} 50%{box-shadow:0 0 50px rgba(255,215,0,0.3),0 20px 60px rgba(0,0,0,0.8)} }
+@keyframes starFloat { 0%,100%{opacity:0.6} 50%{opacity:0.05} }
+@keyframes barGrow { from{width:0} to{width:var(–w)} }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-10px)} 75%{transform:translateX(10px)} }
+
+.star {
+position: fixed;
+border-radius: 50%;
+background: white;
+animation: starFloat linear infinite;
+pointer-events: none;
+z-index: 0;
+}
+
+.title {
+font-size: clamp(1.5rem, 5vw, 2.3rem);
+font-weight: 900;
+font-family: system-ui, sans-serif;
+background: linear-gradient(135deg, #ffd700, #ff6eb4, #00e5cc);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+text-align: center;
+margin-bottom: 4px;
+filter: drop-shadow(0 0 16px rgba(255,215,0,0.5));
+position: relative;
+z-index: 2;
+}
+
+.subtitle {
+color: #7a5090;
+font-size: 0.75rem;
+font-weight: 700;
+letter-spacing: 0.18em;
+text-transform: uppercase;
+text-align: center;
+margin-bottom: 14px;
+position: relative;
+z-index: 2;
+}
+
+.progress-wrap {
+width: 100%;
+max-width: 600px;
+margin-bottom: 12px;
+position: relative;
+z-index: 2;
+}
+
+.chapter-icons {
+display: flex;
+justify-content: space-between;
+margin-bottom: 6px;
+}
+
+.ch-icon {
+width: 32px;
+height: 32px;
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 0.9rem;
+border: 2px solid transparent;
+transition: all 0.4s;
+background: rgba(255,255,255,0.07);
+}
+
+.ch-icon.done { background: linear-gradient(135deg,#ffd700,#ff6eb4); }
+.ch-icon.current { border-color: #ffd700; box-shadow: 0 0 16px rgba(255,215,0,0.7); transform: scale(1.25); background: linear-gradient(135deg,#ffd700,#ff6eb4); }
+
+.bar-track {
+background: rgba(255,255,255,0.07);
+border-radius: 99px;
+height: 6px;
 overflow: hidden;
 }
 
-body::before {
-content: ‘’;
-position: fixed; inset: 0;
-background: repeating-linear-gradient(to bottom, transparent 0px, transparent 3px, rgba(0,0,0,0.12) 3px, rgba(0,0,0,0.12) 4px);
-pointer-events: none;
-z-index: 200;
+.bar-fill {
+height: 100%;
+border-radius: 99px;
+background: linear-gradient(90deg, #ffd700, #ff6eb4, #00e5cc);
+box-shadow: 0 0 10px rgba(255,215,0,0.6);
+transition: width 0.7s cubic-bezier(.4,0,.2,1);
 }
 
-body::after {
-content: ‘’;
-position: fixed; inset: 0;
-background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.6) 100%);
-pointer-events: none;
-z-index: 199;
-animation: flicker 10s infinite;
+.card {
+width: 100%;
+max-width: 600px;
+background: rgba(15,8,35,0.97);
+border-radius: 24px;
+border: 1.5px solid rgba(255,215,0,0.2);
+overflow: hidden;
+animation: glow 4s ease infinite;
+position: relative;
+z-index: 2;
 }
 
-@keyframes flicker {
-0%,89%,91%,93%,95%,100% { opacity:1; }
-90%,92%,94% { opacity:0.88; }
+.card-top {
+padding: 12px 20px 0;
+display: flex;
+justify-content: space-between;
+align-items: center;
 }
 
-/* BOOT */
-#boot {
-position: fixed; inset: 0;
-padding: 14px;
-font-size: clamp(12px, 3.5vw, 15px);
-line-height: 1.65;
-overflow-y: auto;
-z-index: 10;
+.badge {
+background: rgba(255,215,0,0.1);
+border: 1px solid rgba(255,215,0,0.3);
+border-radius: 20px;
+padding: 3px 12px;
+font-size: 0.74rem;
+font-weight: 700;
+color: #ffd700;
+font-family: system-ui, sans-serif;
 }
 
-#boot-art {
-color: var(–g);
-text-shadow: 0 0 18px var(–g);
-font-size: clamp(16px, 4.5vw, 28px);
-margin-bottom: 14px;
-white-space: pre;
-animation: glow 3s ease-in-out infinite alternate;
+.remain {
+font-size: 0.68rem;
+color: #3a2055;
+font-weight: 700;
+font-family: system-ui, sans-serif;
 }
 
-@keyframes glow {
-from { text-shadow: 0 0 10px var(–g); }
-to   { text-shadow: 0 0 28px var(–g), 0 0 50px var(–gd); }
-}
-
-.bl   { display: block; opacity: 0; animation: fi 0.05s forwards; }
-@keyframes fi { to { opacity:1; } }
-.ok   { color: var(–g); }
-.warn { color: var(–yl); }
-.dim  { color: var(–gd); }
-.cy   { color: var(–cy); }
-
-/* TERMINAL */
-#term {
-position: fixed; inset: 0;
-display: none;
-flex-direction: column;
-z-index: 10;
-}
-
-#tbar {
-background: var(–gf);
-border-bottom: 1px solid var(–gd);
-padding: 7px 14px;
+.scene-banner {
+margin: 10px 12px;
+padding: 14px 16px;
+background: linear-gradient(135deg, rgba(61,37,96,0.7), rgba(20,10,50,0.7));
+border-radius: 16px;
+border: 1px solid rgba(255,215,0,0.08);
 display: flex;
 align-items: center;
-gap: 8px;
+gap: 14px;
+}
+
+.scene-emoji {
+font-size: 2.4rem;
+animation: bob 3s ease-in-out infinite;
+filter: drop-shadow(0 0 12px rgba(255,215,0,0.4));
 flex-shrink: 0;
 }
 
-.dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; display:inline-block; }
-.dr  { background:#ff5f57; }
-.dy  { background:#febc2e; }
-.dg  { background:#28c840; }
-
-#ttitle {
-flex:1; text-align:center;
-font-size: clamp(9px, 2.5vw, 12px);
-letter-spacing: 2px;
-color: var(–g);
-text-shadow: 0 0 8px var(–g);
+.scene-title {
+font-weight: 900;
+font-size: 1.05rem;
+color: #ffd700;
+font-family: system-ui, sans-serif;
 }
 
-#out {
-flex:1;
-overflow-y: auto;
-padding: 14px 14px 6px;
-font-size: clamp(12px, 3.5vw, 14px);
-line-height: 1.75;
--webkit-overflow-scrolling: touch;
+.scene-loc {
+font-size: 0.68rem;
+color: #4a3070;
+font-weight: 700;
+margin-top: 2px;
 }
 
-.ln { display:block; white-space:pre-wrap; word-break:break-word; }
-.pl { color: var(–g); }
-.rl { color: var(–gm); }
-.ac { color: var(–cy); }
-.yl { color: var(–yl); }
-.mu { color: var(–gd); }
-.er { color: #ff5555; }
-
-/* BUTTON GRID */
-#btns {
-display: grid;
-grid-template-columns: repeat(3, 1fr);
-gap: 6px;
-padding: 8px 10px 12px;
-border-top: 1px solid var(–gf);
-flex-shrink: 0;
+.story-text {
+padding: 6px 20px 18px;
+line-height: 1.95;
+font-size: 0.97rem;
+color: #e0d0f8;
+animation: slideIn 0.5s ease;
 }
 
-.cb {
-background: var(–gf);
-border: 1px solid var(–gd);
-color: var(–g);
-font-family: ‘Share Tech Mono’, ‘Courier New’, Courier, monospace;
-font-size: clamp(10px, 3vw, 13px);
-padding: 9px 4px;
-border-radius: 4px;
-cursor: pointer;
+.sleep-box {
+margin: 0 20px 14px;
+padding: 13px 18px;
+background: rgba(255,107,180,0.1);
+border: 2px solid rgba(255,107,180,0.45);
+border-radius: 14px;
+font-size: 1.1rem;
+font-weight: 900;
+color: #ff6eb4;
 text-align: center;
+animation: popIn 0.3s ease;
+font-family: system-ui, sans-serif;
+display: none;
+}
+
+.choices-label {
+text-align: center;
+color: #3a2055;
+font-size: 0.72rem;
+font-weight: 700;
+margin: 0 0 8px;
+font-family: system-ui, sans-serif;
+text-transform: uppercase;
+letter-spacing: 0.12em;
+}
+
+.choices {
+padding: 0 20px 16px;
+display: flex;
+flex-direction: column;
+gap: 10px;
+}
+
+.choice-btn {
+padding: 13px 16px;
+border: none;
+border-radius: 14px;
+font-size: 0.9rem;
+font-weight: 800;
+color: #08041a;
+cursor: pointer;
+text-align: left;
+font-family: system-ui, sans-serif;
+display: flex;
+align-items: center;
+gap: 12px;
+transition: transform 0.15s;
 -webkit-tap-highlight-color: transparent;
-user-select: none;
-transition: background 0.1s, box-shadow 0.1s;
 }
 
-.cb:active, .cb:focus { background: #003d10; box-shadow: 0 0 10px var(–gd); outline:none; }
+.choice-btn:active { transform: scale(0.97); }
 
-.wide {
-grid-column: span 3;
-background: #0a1f0a;
-border-color: var(–g);
-color: var(–yl);
-letter-spacing: 1px;
+.choice-a { background: linear-gradient(135deg,#ff6eb4,#cc3380); box-shadow: 0 4px 20px rgba(255,110,180,0.35); }
+.choice-b { background: linear-gradient(135deg,#7fff7f,#33cc33); box-shadow: 0 4px 20px rgba(127,255,127,0.35); }
+.choice-c { background: linear-gradient(135deg,#00e5cc,#009980); box-shadow: 0 4px 20px rgba(0,229,204,0.35); }
+
+.choice-lbl {
+display: block;
+font-size: 0.58rem;
+font-weight: 700;
+text-transform: uppercase;
+letter-spacing: 0.12em;
+opacity: 0.55;
+margin-bottom: 2px;
 }
 
-.wide:active { background: #1a3a1a; box-shadow: 0 0 18px var(–g); }
+.choice-emoji { font-size: 1.5rem; flex-shrink: 0; }
+
+.ending-box {
+padding: 20px;
+text-align: center;
+animation: slideIn 0.6s ease;
+display: none;
+}
+
+.ending-icon {
+font-size: 3.5rem;
+animation: bob 2s ease-in-out infinite;
+filter: drop-shadow(0 0 20px rgba(255,215,0,0.7));
+margin-bottom: 12px;
+display: block;
+}
+
+.ending-title {
+font-size: 1.7rem;
+font-weight: 900;
+background: linear-gradient(135deg,#ffd700,#ff6eb4,#00e5cc);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+margin-bottom: 12px;
+font-family: system-ui, sans-serif;
+}
+
+.ending-text {
+color: #b89fd0;
+font-weight: 600;
+line-height: 2;
+font-size: 0.95rem;
+margin-bottom: 16px;
+}
+
+.victory-btn {
+padding: 11px 28px;
+background: linear-gradient(135deg,#ffd700,#ff6eb4);
+border: none;
+border-radius: 50px;
+font-size: 1rem;
+font-weight: 900;
+color: #08041a;
+cursor: pointer;
+font-family: system-ui, sans-serif;
+box-shadow: 0 0 24px rgba(255,215,0,0.45);
+-webkit-tap-highlight-color: transparent;
+}
+
+.controls {
+padding: 0 20px 20px;
+display: flex;
+gap: 10px;
+}
+
+.ctrl-btn {
+flex: 1;
+padding: 10px;
+border-radius: 12px;
+font-size: 0.78rem;
+font-weight: 700;
+cursor: pointer;
+font-family: system-ui, sans-serif;
+-webkit-tap-highlight-color: transparent;
+}
+
+.ask-btn {
+border: 2px solid rgba(255,107,180,0.35);
+background: rgba(255,107,180,0.07);
+color: #ff6eb4;
+}
+
+.party-btn {
+border: 2px solid rgba(255,255,255,0.1);
+background: transparent;
+color: #7a5090;
+}
+
+.footer {
+margin-top: 14px;
+color: #1a0d30;
+font-size: 0.7rem;
+text-align: center;
+position: relative;
+z-index: 2;
+}
+
+.falling {
+position: fixed;
+top: -50px;
+font-size: 1.8rem;
+pointer-events: none;
+z-index: 999;
+animation: fall linear forwards;
+}
+
+.flash-el {
+position: fixed;
+top: 50%;
+left: 50%;
+font-size: 4rem;
+pointer-events: none;
+z-index: 998;
+animation: flashBig 0.7s ease forwards;
+}
 </style>
 
 </head>
-<body style="background:#010b01">
+<body>
 
-<div id="boot">
-  <div id="boot-art"> ____  _____ _   _
-| __ )| ____| \ | |
-|  _ \|  _| |  \| |
-| |_) | |___| |\  |
-|____/|_____|_| \_|</div>
-  <div id="boot-lines"></div>
+<div class="title">💩 POTTY KINGDOM II 💩</div>
+<div class="subtitle">Rise of Poopzilla</div>
+
+<div class="progress-wrap">
+  <div class="chapter-icons" id="chapterIcons"></div>
+  <div class="bar-track"><div class="bar-fill" id="barFill" style="width:16.6%"></div></div>
 </div>
 
-<div id="term">
-  <div id="tbar">
-    <span class="dot dr"></span>
-    <span class="dot dy"></span>
-    <span class="dot dg"></span>
-    <span id="ttitle">BEN@LOCALHOST -- PERSCHEK.GITHUB.IO</span>
+<div class="card">
+  <div class="card-top">
+    <div class="badge" id="chBadge">⚔️ Chapter 1 of 6</div>
+    <div class="remain" id="chRemain">5 remain</div>
   </div>
-  <div id="out"></div>
-  <div id="btns">
-    <button class="cb" onclick="run('whoami')">whoami</button>
-    <button class="cb" onclick="run('skills')">skills</button>
-    <button class="cb" onclick="run('experience')">experience</button>
-    <button class="cb" onclick="run('education')">education</button>
-    <button class="cb" onclick="run('military')">military</button>
-    <button class="cb" onclick="run('projects')">projects</button>
-    <button class="cb" onclick="run('contact')">contact</button>
-    <button class="cb" onclick="run('clear')">clear</button>
-    <button class="cb" onclick="run('help')">help</button>
-    <button class="cb wide" onclick="run('sudo hire')">[ sudo hire ben ]</button>
+  <div class="scene-banner">
+    <div class="scene-emoji" id="sceneEmoji">☄️</div>
+    <div>
+      <div class="scene-title" id="sceneTitle">The Prophecy of the Second Stink</div>
+      <div class="scene-loc" id="sceneLoc">📍 The Ancient Butt Cave</div>
+    </div>
+  </div>
+  <div class="story-text" id="storyText"></div>
+  <div class="sleep-box" id="sleepBox"></div>
+  <div class="choices" id="choices">
+    <p class="choices-label">⚔️ Choose your path</p>
+  </div>
+  <div class="ending-box" id="endingBox">
+    <span class="ending-icon">🏆👑💩</span>
+    <div class="ending-title">TOOTLANDIA IS SAVED!</div>
+    <p class="ending-text">
+      James &amp; Leo: Grand Royal Poo-Poo Champions. 👑<br>
+      Poopzilla: adopted. Fed twice daily. 🐾<br>
+      The Golden Moon: smells great now. 🌙<br><br>
+      <strong style="color:#ffd700;font-size:1.05rem;">Close your eyes, heroes.<br>Tootlandia will be here tomorrow. 💤</strong>
+    </p>
+    <button class="victory-btn" onclick="party()">🎉 Victory Poop Party!</button>
+  </div>
+  <div class="controls">
+    <button class="ctrl-btn ask-btn" onclick="askQuestion()">❓ Ask a Question</button>
+    <button class="ctrl-btn party-btn" onclick="party()">💥 Poop Party!</button>
   </div>
 </div>
+
+<div class="footer">💤 go to sleep 💤</div>
 
 <script>
-const bootLines = [
-  { t:'BEN-OS BIOS v2.6 -- Field Systems LLC',          c:'dim',  d:0    },
-  { t:'CPU: US Army Combat Engineer / Iowa Nat Guard',   c:'ok',   d:130  },
-  { t:'RAM: 250lb bad decisions, good intentions',       c:'ok',   d:230  },
-  { t:'',                                                c:'',     d:300  },
-  { t:'Initializing hardware...',                        c:'dim',  d:360  },
-  { t:'  [ OK ] Boots size 14, steel-toed',              c:'ok',   d:470  },
-  { t:'  [ OK ] Coffee module loaded',                   c:'ok',   d:570  },
-  { t:'  [ OK ] Great Pyrenees (Milo) bark daemon up',   c:'ok',   d:670  },
-  { t:'',                                                c:'',     d:730  },
-  { t:'Loading kernel modules...',                       c:'dim',  d:790  },
-  { t:'  [ OK ] usps_city_carrier.ko        LOADED',     c:'ok',   d:890  },
-  { t:'  [ OK ] army_national_guard.ko      LOADED',     c:'ok',   d:970  },
-  { t:'  [WARN] wgu_cybersecurity_bs.ko     LOADING',    c:'warn', d:1050 },
-  { t:'  [ OK ] itam_asset_tracking.ko      LOADED',     c:'ok',   d:1130 },
-  { t:'  [ OK ] esp32_diy_hacker.ko         LOADED',     c:'ok',   d:1210 },
-  { t:'  [WARN] cedar_tech_solutions.ko  IN PROGRESS',   c:'warn', d:1290 },
-  { t:'',                                                c:'',     d:1350 },
-  { t:'Checking filesystems...',                         c:'dim',  d:1410 },
-  { t:'  [ OK ] /dev/usps -- route integrity OK',        c:'ok',   d:1510 },
-  { t:'  [ OK ] /dev/army -- accountability OK',         c:'ok',   d:1590 },
-  { t:'  [ OK ] /dev/fleet -- Clatsop County clean',     c:'ok',   d:1670 },
-  { t:'',                                                c:'',     d:1730 },
-  { t:'Mounting...',                                     c:'dim',  d:1790 },
-  { t:'  [ OK ] Cedar Rapids IA -- /home/ben  mounted',  c:'ok',   d:1870 },
-  { t:'  [ OK ] James + Leo -- /home/ben/kids mounted',  c:'ok',   d:1950 },
-  { t:'',                                                c:'',     d:2010 },
-  { t:'[####################] 100%',                     c:'ok',   d:2090 },
-  { t:'',                                                c:'',     d:2170 },
-  { t:'BEN-OS ready. Loading shell...',                  c:'cy',   d:2230 },
+const STORY = [
+  {
+    emoji: "☄️", title: "The Prophecy of the Second Stink", location: "The Ancient Butt Cave",
+    text: "One week after James and Leo saved Tootlandia, a SECOND prophecy was discovered carved into an ancient bathroom wall. It read: 'When the moon turns brown and the wind smells like cheese, the ULTRA MEGA SUPER POOP shall rise!' The boys looked at each other. The moon was already turning brown. They had until midnight.",
+    choices: [
+      { text: "Ride the Giant Fart Cloud to battle 💨🌪️", emoji: "💨" },
+      { text: "Consult the Toilet Paper Scrolls 📜🧻", emoji: "📜" },
+      { text: "Eat 47 bean burritos to prepare 🌯💣", emoji: "🌯" },
+    ]
+  },
+  {
+    emoji: "🌑", title: "The Brown Moon Rises", location: "The Sky of Tootlandia",
+    text: "They rocketed through the sky on a cloud of pure fart power, leaving a trail of rainbow toots behind them. The brown moon loomed overhead, enormous and deeply suspicious-smelling. Then CRACK — it split open, and from inside came a voice so rumbly it vibrated everyone's butts at the same time.",
+    choices: [
+      { text: "Shout 'WE FEAR NO MOON POOP' 👑", emoji: "👑" },
+      { text: "Fire the Wee-Wee Cannon at the moon 🚀💦", emoji: "🚀" },
+      { text: "Play a sad toot on the butt trumpet 🎺💨", emoji: "🎺" },
+    ]
+  },
+  {
+    emoji: "👾", title: "POOPZILLA AWAKENS", location: "The Eternal Flushy — Level B2",
+    text: "From the crack in the moon emerged POOPZILLA — twelve stories tall, wearing a tiny crown, and absolutely furious. It had twelve arms each holding a different cheese. 'I HAVE WAITED ONE MILLION YEARS FOR MY REVENGE!' James noticed it was crying. Leo noticed it smelled like his gym socks. They would use both facts as weapons.",
+    choices: [
+      { text: "Ask Poopzilla why it's sad and give it a hug 🤗", emoji: "🤗" },
+      { text: "Summon the Toilet Brush of Doom 🪥⚡", emoji: "🪥" },
+      { text: "Challenge it to a MEGA TOOT BATTLE 💨🌍", emoji: "💨" },
+    ]
+  },
+  {
+    emoji: "⚔️", title: "The Mega Toot Battle", location: "The Arena of One Thousand Stinks",
+    text: "Whoever tooted last, loudest, and smelliest would win the fate of Tootlandia. Poopzilla went first — it knocked the judges' wigs off and sent three butterflies into retirement. Then James and Leo took a deep breath together. And in perfect harmony they unleashed the most legendary toot in recorded history.",
+    choices: [
+      { text: "Activate the Double Dragon Doo-Doo Blast 🐉💩", emoji: "🐉" },
+      { text: "Use the power of their fart-proof capes ⚡🦸", emoji: "⚡" },
+      { text: "Just toot REALLY REALLY HARD 💨💨💨", emoji: "💨" },
+    ]
+  },
+  {
+    emoji: "💥", title: "The Big Boom", location: "Everywhere In Tootlandia At Once",
+    text: "The Double Dragon Doo-Doo Blast hit Poopzilla so hard it exploded into a million tiny friendly poops, each flushed by a tiny magical toilet. The brown moon turned gold. Tiny Poopzilla floated up and whispered: 'You boys are the stinkiest heroes I have ever met. And that is the greatest compliment I know.'",
+    choices: [
+      { text: "Accept the compliment and victory fart 🏆💨", emoji: "🏆" },
+      { text: "Ask tiny Poopzilla to be your pet 🐾", emoji: "🐾" },
+      { text: "Take a victory nap — you earned it 😴", emoji: "😴" },
+    ]
+  },
+  {
+    emoji: "🌙", title: "Heroes of Tootlandia Forever", location: "The Royal Throne Room (freshly cleaned)",
+    text: "The King of Wee-Wee declared James and Leo the Official Grand Royal Poo-Poo Champions of Tootlandia. Tiny Poopzilla became their pet and slept at the foot of their beds, snoring softly and occasionally letting out a small polite toot. And as the golden moon rose over the kingdom, James and Leo curled up, eyes drooping, butts finally at rest.",
+    choices: null, ending: true
+  },
 ];
 
-const bl = document.getElementById('boot-lines');
+const SLEEP = [
+  "GO TO SLEEP. 😴","Nice try. SLEEP. 💤","The answer is sleep. 🌙",
+  "SHHHHHHH. 😴","No. Sleep. 💤","Poopzilla says: BED. 💩",
+  "ZZZZZZZZ. That means YOU. 😴","I said GOODNIGHT. 🌙",
+  "Your eyes are SO heavy... 💤","Tootlandia is CLOSED. Sleep. 🚽",
+  "Great question. Go to sleep. 😴","The Story Wizard is asleep. JOIN HIM. 💤",
+  "Nice try, champion. BED. 👑","Poopzilla is already asleep. Copy him. 💩😴",
+];
 
-function runBoot() {
-  bootLines.forEach(({t, c, d}) => {
-    setTimeout(() => {
-      const s = document.createElement('span');
-      s.className = 'bl ' + c;
-      s.textContent = t;
-      bl.appendChild(s);
-      bl.scrollTop = bl.scrollHeight;
-    }, d);
-  });
-  const last = bootLines[bootLines.length - 1].d;
-  setTimeout(goTerm, last + 700);
-}
+const ICONS = ["☄️","🌑","👾","⚔️","💥","🌙"];
+let chapter = 0;
 
-function goTerm() {
-  const boot = document.getElementById('boot');
-  boot.style.transition = 'opacity 0.5s';
-  boot.style.opacity = '0';
-  setTimeout(() => {
-    boot.style.display = 'none';
-    document.getElementById('term').style.display = 'flex';
-    welcome();
-  }, 500);
-}
+function render() {
+  const s = STORY[chapter];
 
-const outEl = document.getElementById('out');
+  // Chapter icons
+  const iconWrap = document.getElementById('chapterIcons');
+  iconWrap.innerHTML = ICONS.map((e,i) => {
+    let cls = 'ch-icon';
+    if (i < chapter) cls += ' done';
+    if (i === chapter) cls += ' current';
+    return `<div class="${cls}">${i <= chapter ? e : '🔒'}</div>`;
+  }).join('');
 
-function p(html, cls='rl') {
-  const s = document.createElement('span');
-  s.className = 'ln ' + cls;
-  s.innerHTML = html;
-  outEl.appendChild(s);
-  outEl.scrollTop = outEl.scrollHeight;
-}
+  // Bar
+  document.getElementById('barFill').style.width = ((chapter+1)/STORY.length*100)+'%';
 
-function welcome() {
-  p(`<span style="color:var(--g);text-shadow:0 0 12px var(--g);white-space:pre"> ____  _____ _   _
-| __ )| ____| \\ | |
-|  _ \\|  _| |  \\| |
-| |_) | |___| |\\  |
-|____/|_____|_| \\_|</span>`);
-  p(`<span class="ac">  Ben Perschek</span> -- Carrier / Engineer / Cyber Student`);
-  p(`  <span class="mu">Cedar Rapids, Iowa</span>`);
-  p(``);
-  p(`  <span class="yl">Tap any button below to explore.</span>`);
-  p(``);
-}
+  // Badge
+  document.getElementById('chBadge').textContent = '⚔️ Chapter '+(chapter+1)+' of '+STORY.length;
+  document.getElementById('chRemain').textContent = s.ending ? '🏆 FINAL CHAPTER' : (STORY.length-chapter-1)+' remain';
 
-function run(cmd) {
-  p(`<span class="ac">ben@localhost:~$</span> ${cmd}`, 'pl');
-  const fn = CMDS[cmd];
-  if (fn) fn();
-  else {
-    p(`<span class="er">not found: ${cmd}</span>`);
-    p(`<span class="mu">Tap a button below.</span>`);
-    p(``);
+  // Scene
+  document.getElementById('sceneEmoji').textContent = s.emoji;
+  document.getElementById('sceneTitle').textContent = s.title;
+  document.getElementById('sceneLoc').textContent = '📍 ' + s.location;
+
+  // Story
+  const st = document.getElementById('storyText');
+  st.style.animation = 'none';
+  st.textContent = s.text;
+  void st.offsetWidth;
+  st.style.animation = 'slideIn 0.5s ease';
+
+  // Sleep
+  document.getElementById('sleepBox').style.display = 'none';
+  document.getElementById('sleepBox').textContent = '';
+
+  // Choices
+  const choicesEl = document.getElementById('choices');
+  const endingEl = document.getElementById('endingBox');
+
+  if (s.ending) {
+    choicesEl.style.display = 'none';
+    endingEl.style.display = 'block';
+    party();
+  } else {
+    endingEl.style.display = 'none';
+    choicesEl.style.display = 'flex';
+    const cls = ['choice-a','choice-b','choice-c'];
+    choicesEl.innerHTML = '<p class="choices-label">⚔️ Choose your path</p>' +
+      s.choices.map((c,i) => `
+        <button class="choice-btn ${cls[i]}" onclick="pick(${i})">
+          <span class="choice-emoji">${c.emoji}</span>
+          <span><span class="choice-lbl">Choice ${String.fromCharCode(65+i)}</span>${c.text}</span>
+        </button>`).join('');
   }
 }
 
-const CMDS = {
+function pick(i) {
+  const c = STORY[chapter].choices[i];
+  flash(c.emoji);
+  spawn(["💩","💨","✨","👑","⚡","🌟"], 14);
+  setTimeout(() => {
+    if (chapter < STORY.length - 1) {
+      chapter++;
+      render();
+    }
+  }, 600);
+}
 
-  help: () => {
-    p(`<span class="ac">-- COMMANDS --</span>`);
-    p(`  <span class="ac">whoami</span>     <span class="mu">Who is Ben</span>`);
-    p(`  <span class="ac">skills</span>     <span class="mu">Technical and professional skills</span>`);
-    p(`  <span class="ac">experience</span> <span class="mu">Work history</span>`);
-    p(`  <span class="ac">education</span>  <span class="mu">Degrees and certs</span>`);
-    p(`  <span class="ac">military</span>   <span class="mu">Army National Guard service</span>`);
-    p(`  <span class="ac">projects</span>   <span class="mu">DIY and side projects</span>`);
-    p(`  <span class="ac">contact</span>    <span class="mu">How to reach Ben</span>`);
-    p(`  <span class="ac">sudo hire</span>  <span class="mu">Most important command</span>`);
-    p(``);
-  },
+function flash(emoji) {
+  const el = document.createElement('div');
+  el.className = 'flash-el';
+  el.textContent = emoji;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 800);
+}
 
-  whoami: () => {
-    p(`<span class="ac">-- IDENTITY --</span>`);
-    p(``);
-    p(`  <span class="yl">Ben Perschek</span>  6'4"  Cedar Rapids, Iowa`);
-    p(``);
-    p(`  USPS City Carrier by day.`);
-    p(`  Army National Guard Combat Engineer by duty.`);
-    p(`  WGU Cybersecurity student by ambition.`);
-    p(`  ESP32 tinkerer, motorcycle guy,`);
-    p(`  Seahawks fan, dad to James and Leo.`);
-    p(``);
-    p(`  Transitioning into IT/Cybersecurity`);
-    p(`  with federal employment status and`);
-    p(`  veteran hiring preference.`);
-    p(``);
-    p(`  Building Cedar Tech Solutions --`);
-    p(`  mobile IT and security for small`);
-    p(`  businesses in Cedar Rapids.`);
-    p(``);
-  },
-
-  skills: () => {
-    p(`<span class="ac">-- SKILLS --</span>`);
-    p(``);
-    p(`  <span class="yl">CYBERSECURITY / IT</span>`);
-    p(`    Network security (WGU coursework)`);
-    p(`    IT Asset Management (ITAM)`);
-    p(`    ESP32, RFID, IoT hardware`);
-    p(`    Linux (Pop!_OS), scripting`);
-    p(``);
-    p(`  <span class="yl">OPERATIONS / LOGISTICS</span>`);
-    p(`    USPS route and asset management`);
-    p(`    Fleet Shop Manager -- Clatsop County`);
-    p(`    Army sensitive items accountability`);
-    p(`    Chain-of-custody, inventory systems`);
-    p(``);
-    p(`  <span class="yl">SOFT SKILLS</span>`);
-    p(`    Veteran discipline, mission focus`);
-    p(`    Daily customer-facing communication`);
-    p(`    Independent problem-solving`);
-    p(``);
-  },
-
-  experience: () => {
-    p(`<span class="ac">-- EXPERIENCE --</span>`);
-    p(``);
-    p(`  <span class="yl">USPS -- City Carrier</span>`);
-    p(`  <span class="mu">Current | Hiawatha, IA</span>`);
-    p(`  Delivery ops, asset accountability,`);
-    p(`  federal employment status`);
-    p(``);
-    p(`  <span class="yl">Brother's Market</span>`);
-    p(`  <span class="mu">2023-2024 | Cedar Rapids, IA</span>`);
-    p(`  Customer service, inventory ops`);
-    p(``);
-    p(`  <span class="yl">Clatsop County Public Works</span>`);
-    p(`  <span class="mu">2019-2022 | Oregon</span>`);
-    p(`  Fleet Shop Manager`);
-    p(`  Vehicle tracking, tool inventory,`);
-    p(`  maintenance scheduling, vendors`);
-    p(``);
-    p(`  <span class="yl">Safeway</span>`);
-    p(`  <span class="mu">2017-2019 | Oregon</span>`);
-    p(`  Customer service, team operations`);
-    p(``);
-    p(`  <span class="yl">Gearhart Builders Supply</span>`);
-    p(`  <span class="mu">2016-2017 | Oregon</span>`);
-    p(`  Materials, supply chain, contractors`);
-    p(``);
-  },
-
-  education: () => {
-    p(`<span class="ac">-- EDUCATION --</span>`);
-    p(``);
-    p(`  <span class="yl">B.S. Cybersecurity and Info Assurance</span>`);
-    p(`  Western Governors University`);
-    p(`  <span class="mu">In Progress</span>`);
-    p(``);
-    p(`  <span class="yl">U.S. Army -- Combat Engineer MOS</span>`);
-    p(`  Iowa Army National Guard`);
-    p(``);
-    p(`  <span class="mu">CompTIA certs actively in progress</span>`);
-    p(``);
-  },
-
-  military: () => {
-    p(`<span class="ac">-- MILITARY --</span>`);
-    p(``);
-    p(`  <span class="yl">U.S. Army National Guard</span>`);
-    p(`  MOS: Combat Engineer  |  Iowa`);
-    p(``);
-    p(`  Skills transferred to civilian sector:`);
-    p(`    Sensitive items accountability`);
-    p(`    Chain-of-custody documentation`);
-    p(`    High-pressure decision-making`);
-    p(`    Mission planning and leadership`);
-    p(``);
-    p(`  <span class="mu">Veteran hiring preference -- federal roles</span>`);
-    p(``);
-  },
-
-  projects: () => {
-    p(`<span class="ac">-- PROJECTS --</span>`);
-    p(``);
-    p(`  <span class="yl">Auto Pet Door -- DIY IoT</span>`);
-    p(`  ESP32 + RFID + linear actuator`);
-    p(`  Suction-mounted to sliding patio door`);
-    p(`  <span class="mu">Status: firmware in progress</span>`);
-    p(``);
-    p(`  <span class="yl">Cedar Tech Solutions</span>`);
-    p(`  Mobile IT and security -- Cedar Rapids`);
-    p(`  Targeting small biz on delivery route`);
-    p(`  <span class="mu">Status: planning phase</span>`);
-    p(``);
-    p(`  <span class="yl">E-Bike Conversion</span>`);
-    p(`  Nishiki Pueblo -> moto-style electric`);
-    p(`  2000W hub motor, LiPo, Sur-Ron look`);
-    p(`  <span class="mu">Status: research and sourcing</span>`);
-    p(``);
-    p(`  <span class="yl">This Terminal Resume</span>`);
-    p(`  Vanilla JS/CSS on GitHub Pages`);
-    p(`  <span class="mu">Status: running</span>`);
-    p(``);
-  },
-
-  contact: () => {
-    p(`<span class="ac">-- CONTACT --</span>`);
-    p(``);
-    p(`  <span class="yl">Location</span>  Cedar Rapids, Iowa`);
-    p(`  <span class="yl">LinkedIn</span>  linkedin.com/in/YOUR-HANDLE`);
-    p(`  <span class="yl">GitHub</span>    github.com/perschek`);
-    p(`  <span class="yl">Email</span>     your@email.com`);
-    p(``);
-    p(`  <span class="mu">// swap in your real links before sharing</span>`);
-    p(``);
-  },
-
-  clear: () => { outEl.innerHTML = ''; },
-
-  'sudo hire': () => {
-    p(`<span class="yl">[sudo] password for ben:</span> <span class="mu">**************</span>`);
+function spawn(emojis, n) {
+  for (let i = 0; i < n; i++) {
     setTimeout(() => {
-      p(``);
-      p(`<span class="ac">  ACCESS GRANTED.</span>`);
-      p(``);
-      p(`  Executing hire_ben.sh...`);
-      p(``);
-      p(`  [OK] Veteran hiring preference  -- verified`);
-      p(`  [OK] Federal employment status  -- confirmed`);
-      p(`  [OK] ITAM experience            -- loaded`);
-      p(`  [OK] Cybersecurity degree       -- in progress`);
-      p(`  [OK] Mission-focused mindset    -- hardcoded`);
-      p(`  [OK] Shows up, gets it done     -- always true`);
-      p(``);
-      p(`<span class="yl">  Recommend immediate interview.</span>`);
-      p(``);
-    }, 900);
-  },
+      const el = document.createElement('div');
+      el.className = 'falling';
+      el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+      el.style.left = (Math.random()*90)+'%';
+      el.style.fontSize = (1.2+Math.random()*1.5)+'rem';
+      const dur = 1.4+Math.random()*1.2;
+      el.style.animationDuration = dur+'s';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), dur*1000+100);
+    }, i*60);
+  }
+}
 
-};
+function askQuestion() {
+  const box = document.getElementById('sleepBox');
+  box.textContent = SLEEP[Math.floor(Math.random()*SLEEP.length)];
+  box.style.display = 'block';
+  box.style.animation = 'none';
+  void box.offsetWidth;
+  box.style.animation = 'popIn 0.3s ease';
+  spawn(["😴","💤","🌙","🛏️"], 8);
+}
 
-document.addEventListener('DOMContentLoaded', () => setTimeout(runBoot, 80));
+function party() {
+  spawn(["💩","🚽","💨","🧻","💦","👑","⚡","💥","🎉"], 22);
+}
+
+// Make stars
+for (let i = 0; i < 35; i++) {
+  const s = document.createElement('div');
+  s.className = 'star';
+  s.style.left = (Math.random()*100)+'%';
+  s.style.top = (Math.random()*100)+'%';
+  const sz = Math.random()*2+1;
+  s.style.width = sz+'px';
+  s.style.height = sz+'px';
+  const dur = 2+(i%4);
+  s.style.animationDuration = dur+'s';
+  s.style.animationDelay = (Math.random()*3)+'s';
+  document.body.appendChild(s);
+}
+
+render();
 </script>
 
 </body>
